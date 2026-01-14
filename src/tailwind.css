@@ -63,8 +63,11 @@
   --color-white-transparency-60: #ffffff99;
   --color-white-transparency-80: #ffffffcc;
 
+  /* Card/Form Elements */
+  --color-card-border: #68819926;
+
   /* Gradients */
-  --color-gradient-background: linear-gradient(228deg, #f9f7f5 44.51%, #3d5e7f 228.11%);
+  --color-gradient-background: linear-gradient(228deg, #F9F7F5 44.51%, #3D5E7F 228.11%);
   --color-gradient-bg-linear-2: linear-gradient(
     174deg,
     rgba(249, 247, 245, 0.8) 48.86%,

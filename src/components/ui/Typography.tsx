@@ -14,7 +14,7 @@ const typographyVariants = cva('', {
       // Headlines - base sizes
       h1: 'text-[48px] font-bold',
       h2: 'text-[40px] font-semibold',
-      h3: 'text-[30px] font-semibold',
+      h3: 'text-[30px] leading-[120%] font-semibold',
       h4: 'text-[25px] font-semibold',
       h5: 'text-[20px] font-semibold',
       h6: 'text-[16px] leading-[19px] font-semibold',
