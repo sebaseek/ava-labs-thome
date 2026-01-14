@@ -1,6 +1,7 @@
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '../utils'
+import { Text } from './Text'
 
 export type SelectableFieldProps = {
   label: string
@@ -84,7 +85,9 @@ const SelectableField = ({
 
           {canInteract && content && content}
           {canInteract && !content && placeholder && (
-            <span className="text-base font-medium leading-[19px] text-blue-1">{placeholder}</span>
+            <Text size="base" weight="medium" leading="tight" active={isOpen}>
+              {placeholder}
+            </Text>
           )}
         </div>
 
