@@ -1,4 +1,4 @@
-import { AssetSelector, Typography } from '@/components'
+import { AssetSelector, Typography, VaultSelector } from '@/components'
 
 export const Transfer = () => {
   return (
@@ -23,6 +23,8 @@ export const Transfer = () => {
           <div className="space-y-4">
             {/* Asset Selector */}
             <AssetSelector />
+            {/* Vault Selector */}
+            <VaultSelector />
           </div>
         </div>
       </div>

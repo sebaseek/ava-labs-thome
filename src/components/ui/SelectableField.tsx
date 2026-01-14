@@ -93,15 +93,12 @@ const SelectableField = ({
 
         {/* Right: Icon */}
         {isLoading && !error && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-blue-5" />}
-        {canInteract && (
-          <>
-            {isOpen ? (
-              <ChevronUp className="h-5 w-5 shrink-0 text-blue-1" />
-            ) : (
-              <ChevronDown className="h-5 w-5 shrink-0 text-blue-1" />
-            )}
-          </>
-        )}
+        {canInteract &&
+          (isOpen ? (
+            <ChevronUp className="h-5 w-5 shrink-0 text-blue-1" />
+          ) : (
+            <ChevronDown className="h-5 w-5 shrink-0 text-blue-1" />
+          ))}
       </button>
 
       {/* Expanded Content */}

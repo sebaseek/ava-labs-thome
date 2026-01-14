@@ -1,12 +1,12 @@
-import "./tailwind.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import './tailwind.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App.tsx'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById('root')
 
 if (rootElement) {
   createRoot(rootElement).render(
@@ -14,6 +14,6 @@ if (rootElement) {
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>
-    </StrictMode>
-  );
+    </StrictMode>,
+  )
 }

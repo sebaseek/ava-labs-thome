@@ -11,7 +11,8 @@ export const selectableItemVariants = cva(
     },
     variants: {
       variant: {
-        default: 'border-transparent bg-white-transparency-40 hover:border-card-border hover:bg-white',
+        default:
+          'border-transparent bg-white-transparency-40 hover:border-card-border hover:bg-white',
       },
       selected: {
         true: 'border-card-border bg-white',

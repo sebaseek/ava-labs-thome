@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { type Asset, fetchAssets } from '@/api/assets'
 import { fetchNetworks } from '@/api/networks'
 import { assetToVaultBalances } from '@/api/vault-balances'
-import { SelectableItem, SelectableField, Input } from '@/components/ui'
+import { Input, SelectableField, SelectableItem } from '@/components/ui'
 import { calculateTotalBalance, formatBalance } from '@/utils/balance'
 
 // Asset prices in USD (mocked data from vault-balances comments)

@@ -47,14 +47,11 @@ export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
     // Determine color based on active state if provided
     const resolvedColor = active !== undefined ? (active ? 'blue-1' : 'blue-5') : color
 
-    return React.createElement(
-      as,
-      {
-        ref,
-        className: cn(textVariants({ size, weight, color: resolvedColor, leading }), className),
-        ...props,
-      },
-    )
+    return React.createElement(as, {
+      ref,
+      className: cn(textVariants({ size, weight, color: resolvedColor, leading }), className),
+      ...props,
+    })
   },
 )
 Text.displayName = 'Text'
