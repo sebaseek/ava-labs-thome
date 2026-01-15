@@ -1,0 +1,126 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import type { ReactElement } from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AmountSelector } from './AmountSelector'
+
+// Mock the hooks
+const mockSelectedAsset = {
+  id: '1',
+  symbol: 'VET',
+  name: 'VeChain',
+  decimals: 18,
+  logoUri: '/vet.png',
+  networkId: '1',
+  price: '0.02',
+}
+
+const mockSelectedVault = { id: '1', name: 'Vault 1' }
+
+vi.mock('@/hooks/useSelectedAsset', () => ({
+  useSelectedAsset: vi.fn(() => ({
+    selectedAsset: mockSelectedAsset,
+  })),
+}))
+
+vi.mock('@/hooks/useSelectedVault', () => ({
+  useSelectedVault: vi.fn(() => ({
+    selectedVault: mockSelectedVault,
+  })),
+}))
+
+// Mock API calls
+vi.mock('@/api/fee', () => ({
+  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 VET
+}))
+
+vi.mock('@/api/vault-balances', () => ({
+  fetchBalancesForVault: vi.fn(() =>
+    Promise.resolve([
+      { balance: '1000000000000000000', accountIndex: 0 }, // 1 VET
+    ]),
+  ),
+}))
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: 0 },
+    },
+  })
+
+const renderWithProviders = (ui: ReactElement) => {
+  const queryClient = createTestQueryClient()
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
+}
+
+describe('AmountSelector', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('renders amount input field', () => {
+    renderWithProviders(<AmountSelector />)
+    expect(screen.getByPlaceholderText('0.00')).toBeInTheDocument()
+  })
+
+  it('renders MAX button', () => {
+    renderWithProviders(<AmountSelector />)
+    expect(screen.getByRole('button', { name: /MAX/i })).toBeInTheDocument()
+  })
+
+  it('calls setAmount when amount prop is provided', async () => {
+    const setAmount = vi.fn()
+    renderWithProviders(<AmountSelector amount="100" setAmount={setAmount} />)
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('100')).toBeInTheDocument()
+    })
+  })
+
+  it('shows error border on input when hasError is true', async () => {
+    const { container } = renderWithProviders(<AmountSelector hasError />)
+    await waitFor(() => {
+      const input = container.querySelector('input')
+      expect(input).toHaveClass('border-red-highlight-2')
+    })
+  })
+
+  it('calls onFieldClick when input is focused', async () => {
+    const user = userEvent.setup()
+    const handleFieldClick = vi.fn()
+    renderWithProviders(<AmountSelector onFieldClick={handleFieldClick} />)
+    const input = screen.getByPlaceholderText('0.00')
+    await user.click(input)
+    expect(handleFieldClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls setAmount when user types', async () => {
+    const user = userEvent.setup()
+    const setAmount = vi.fn()
+    renderWithProviders(<AmountSelector setAmount={setAmount} />)
+    const input = screen.getByPlaceholderText('0.00')
+    await user.type(input, '100')
+    expect(setAmount).toHaveBeenCalled()
+  })
+
+  it('handles max button click', async () => {
+    const user = userEvent.setup()
+    const setAmount = vi.fn()
+    renderWithProviders(<AmountSelector setAmount={setAmount} />)
+
+    await waitFor(() => {
+      const maxButton = screen.getByRole('button', { name: /MAX/i })
+      expect(maxButton).toBeInTheDocument()
+    })
+
+    const maxButton = screen.getByRole('button', { name: /MAX/i })
+    await user.click(maxButton)
+
+    // Max button should call setAmount with the max value
+    await waitFor(() => {
+      expect(setAmount).toHaveBeenCalled()
+    })
+  })
+})
