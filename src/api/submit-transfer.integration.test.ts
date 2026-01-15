@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { submitTransfer } from './submit-transfer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { networkToVaultToAddresses } from './addresses'
-import { assetToVaultBalances } from './vault-balances'
+import { submitTransfer } from './submit-transfer'
 import * as utilsModule from './utils'
+import { assetToVaultBalances } from './vault-balances'
 
 // Mock the simulateApiRequest to control success/failure
 vi.mock('./utils', async () => {

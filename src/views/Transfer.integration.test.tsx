@@ -45,11 +45,7 @@ vi.mock('@/api/vaults', () => ({
 }))
 
 vi.mock('@/api/networks', () => ({
-  fetchNetworks: vi.fn(() =>
-    Promise.resolve([
-      { id: 'eip155:43113', name: 'Avalanche C-Chain' },
-    ]),
-  ),
+  fetchNetworks: vi.fn(() => Promise.resolve([{ id: 'eip155:43113', name: 'Avalanche C-Chain' }])),
 }))
 
 vi.mock('@/api/fee', () => ({
@@ -119,27 +115,35 @@ const renderWithProviders = (ui: ReactElement) => {
 }
 
 // Helper to find and click selectable items (avoiding selected content)
-const findAndClickSelectableItem = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
+const findAndClickSelectableItem = async (
+  user: ReturnType<typeof userEvent.setup>,
+  text: string,
+) => {
   await waitFor(() => {
     expect(screen.getByText(text)).toBeInTheDocument()
   })
 
   // Find all instances of the text
   const elements = screen.getAllByText(text)
-  
+
   // Try to find one that's in a clickable container (SelectableItem or button)
   for (const element of elements) {
-    const parent = element.closest('button') || element.closest('[role="button"]') || element.closest('[class*="SelectableItem"]')
+    const parent =
+      element.closest('button') ||
+      element.closest('[role="button"]') ||
+      element.closest('[class*="SelectableItem"]')
     if (parent && parent !== element) {
       // Check if it's not the selected content (selected content is usually in a different structure)
-      const isSelectedContent = element.closest('[class*="flex items-center gap-3"]')?.querySelector('img')
+      const isSelectedContent = element
+        .closest('[class*="flex items-center gap-3"]')
+        ?.querySelector('img')
       if (!isSelectedContent || elements.length === 1) {
         await user.click(parent as HTMLElement)
         return
       }
     }
   }
-  
+
   // Fallback: click the last element (usually the one in the list, not selected)
   if (elements.length > 1) {
     await user.click(elements[elements.length - 1])
