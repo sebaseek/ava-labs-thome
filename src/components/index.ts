@@ -1,5 +1,5 @@
 export * from './AmountSelector'
 export * from './AssetSelector'
+export * from './ToVaultSelector'
 export * from './ui'
 export * from './VaultSelector'
-export * from './ToVaultSelector'

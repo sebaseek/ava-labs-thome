@@ -1,15 +1,15 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { formatUnits } from 'viem'
-import type { Asset } from '@/api/assets'
 import type { Address } from '@/api/addresses'
 import { networkToVaultToAddresses } from '@/api/addresses'
-import { fetchVaults } from '@/api/vaults'
+import type { Asset } from '@/api/assets'
 import { assetToVaultBalances } from '@/api/vault-balances'
+import { fetchVaults } from '@/api/vaults'
 import { SelectableField, SelectableItem } from '@/components/ui'
+import { cn } from '@/components/utils'
 import { formatBalance } from '@/utils/balance'
 import { ASSET_PRICES } from '@/utils/prices'
-import { cn } from '@/components/utils'
 
 interface AccountWithBalance {
   address: Address
