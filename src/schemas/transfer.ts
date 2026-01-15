@@ -10,28 +10,28 @@ import type { Vault } from '@/api/vaults'
 export const transferFormSchema = z.object({
   asset: z
     .custom<Asset>((val) => val !== null && typeof val === 'object' && 'id' in val, {
-      message: 'Asset is required',
+      message: 'Please select an asset to continue',
     })
     .refine((val) => val !== null, {
-      message: 'Please select an asset',
+      message: 'Please select an asset to continue',
     }),
   vault: z
     .custom<Vault>((val) => val !== null && typeof val === 'object' && 'id' in val, {
-      message: 'Vault is required',
+      message: 'Please select a source vault',
     })
     .refine((val) => val !== null, {
-      message: 'Please select a vault',
+      message: 'Please select a source vault',
     }),
   toAddress: z
     .custom<Address>((val) => val !== null && typeof val === 'object' && 'address' in val, {
-      message: 'Destination address is required',
+      message: 'Please select a destination address',
     })
     .refine((val) => val !== null, {
       message: 'Please select a destination address',
     }),
   amount: z
     .string()
-    .min(1, 'Amount is required')
+    .min(1, 'Please enter an amount')
     .refine(
       (val) => {
         const cleaned = val.replace(/,/g, '')
@@ -39,7 +39,7 @@ export const transferFormSchema = z.object({
         return !Number.isNaN(num) && num > 0
       },
       {
-        message: 'Amount must be greater than zero',
+        message: 'Please enter an amount greater than zero',
       },
     )
     .refine(
@@ -48,10 +48,13 @@ export const transferFormSchema = z.object({
         return cleaned !== '0' && cleaned !== '0.00' && cleaned !== '0.'
       },
       {
-        message: 'Amount must be greater than zero',
+        message: 'Please enter an amount greater than zero',
       },
     ),
-  memo: z.string().max(256, 'Memo must be less than 256 characters').optional().default(''),
+  memo: z
+    .string()
+    .min(1, 'Please enter a memo')
+    .max(256, 'Memo must be 256 characters or less'),
 })
 
 export type TransferFormValues = z.infer<typeof transferFormSchema>

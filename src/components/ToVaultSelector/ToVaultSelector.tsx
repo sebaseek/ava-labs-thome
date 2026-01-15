@@ -26,6 +26,7 @@ interface ToVaultSelectorProps {
   setSelectedAddress: (address: Address | null) => void
   onFieldClick?: () => void
   hasError?: boolean
+  validationError?: string | null
 }
 
 const ToVaultSelector = ({
@@ -34,6 +35,7 @@ const ToVaultSelector = ({
   setSelectedAddress,
   onFieldClick,
   hasError = false,
+  validationError,
 }: ToVaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedVaultFilter, setSelectedVaultFilter] = useState<string | null>(null) // null = "All"
@@ -179,6 +181,7 @@ const ToVaultSelector = ({
       errorMessage="An error occurred while loading addresses."
       showExpandedContent={showExpandedContent}
       hasError={hasError}
+      validationError={validationError}
     >
       {/* Vault Filter Tabs */}
       {selectedAsset && accountsWithBalances.length > 0 && (

@@ -17,6 +17,7 @@ export type SelectableFieldProps = {
   children?: ReactNode
   showExpandedContent?: boolean
   hasError?: boolean
+  validationError?: string | null
 }
 
 const getErrorMessage = (error: boolean | Error | null, defaultMessage: string): string => {
@@ -38,10 +39,13 @@ const SelectableField = ({
   children,
   showExpandedContent = true,
   hasError = false,
+  validationError,
 }: SelectableFieldProps) => {
   const canInteract = !isLoading && !error
+  const showValidationError = hasError && validationError
 
   return (
+    <>
     <Card
       className={cn(
         // Hover state - only when closed and can interact
@@ -70,13 +74,13 @@ const SelectableField = ({
             {label}
           </span>
 
-          {isLoading && !error && (
+          {isLoading && !error && !showValidationError && (
             <span className="text-base font-medium leading-[120%] text-blue-5">
               {loadingMessage}
             </span>
           )}
 
-          {error && (
+          {error && !showValidationError && (
             <div className="flex items-center gap-2">
               <span className="text-base font-medium leading-[120%] text-white">
                 {getErrorMessage(error, errorMessage)}
@@ -108,6 +112,15 @@ const SelectableField = ({
         <div className="ml-0 px-4 pb-6 pt-4 sm:ml-[200px] sm:px-[25px]">{children}</div>
       )}
     </Card>
+    {/* Validation Error Message Below */}
+    {showValidationError && (
+      <div className="mt-2 flex items-center gap-2 px-4 sm:px-[25px]">
+        <span className="text-sm font-medium leading-[120%] text-red-highlight-1">
+          {validationError}
+        </span>
+      </div>
+    )}
+  </>
   )
 }
 

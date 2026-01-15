@@ -12,6 +12,7 @@ interface AssetSelectorProps {
   setSelectedAsset: (asset: Asset | null) => void
   onFieldClick?: () => void
   hasError?: boolean
+  validationError?: string | null
 }
 
 const AssetSelector = ({
@@ -19,6 +20,7 @@ const AssetSelector = ({
   setSelectedAsset,
   onFieldClick,
   hasError = false,
+  validationError,
 }: AssetSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -113,6 +115,7 @@ const AssetSelector = ({
       errorMessage="An error occurred while loading assets."
       showExpandedContent={!!assets}
       hasError={hasError}
+      validationError={validationError}
     >
       <SearchableList
         searchQuery={searchQuery}

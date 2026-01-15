@@ -81,12 +81,23 @@ export const Transfer = () => {
   })
 
   // Form validation logic - reads from form state
-  const { assetError, vaultError, toAddressError, amountError, validateForm } =
-    useTransferFormValidation({
-      form: { state: { values: formValues } },
-      hasAttemptedSubmit,
-      touchedFields,
-    })
+  const {
+    assetError,
+    vaultError,
+    toAddressError,
+    amountError,
+    memoError,
+    assetErrorMessage,
+    vaultErrorMessage,
+    toAddressErrorMessage,
+    amountErrorMessage,
+    memoErrorMessage,
+    validateForm,
+  } = useTransferFormValidation({
+    form: { state: { values: formValues } },
+    hasAttemptedSubmit,
+    touchedFields,
+  })
 
   // Helper to mark field as touched when edited after submit
   const markFieldTouched = (fieldName: keyof TransferFormInputValues) => {
@@ -165,6 +176,7 @@ export const Transfer = () => {
                       }}
                       onFieldClick={() => handleStepClick(0)}
                       hasError={assetError}
+                      validationError={assetErrorMessage}
                     />
                   )}
                 </form.Field>
@@ -179,6 +191,7 @@ export const Transfer = () => {
                       }}
                       onFieldClick={() => handleStepClick(1)}
                       hasError={vaultError}
+                      validationError={vaultErrorMessage}
                     />
                   )}
                 </form.Field>
@@ -194,6 +207,7 @@ export const Transfer = () => {
                       }}
                       onFieldClick={() => handleStepClick(2)}
                       hasError={toAddressError}
+                      validationError={toAddressErrorMessage}
                     />
                   )}
                 </form.Field>
@@ -210,6 +224,7 @@ export const Transfer = () => {
                       }}
                       onFieldClick={() => handleStepClick(3)}
                       hasError={amountError}
+                      validationError={amountErrorMessage}
                     />
                   )}
                 </form.Field>
@@ -223,6 +238,8 @@ export const Transfer = () => {
                         markFieldTouched('memo')
                       }}
                       onFieldClick={() => handleStepClick(4)}
+                      hasError={memoError}
+                      validationError={memoErrorMessage}
                     />
                   )}
                 </form.Field>

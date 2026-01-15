@@ -18,6 +18,12 @@ interface UseTransferFormValidationReturn {
   vaultError: boolean
   toAddressError: boolean
   amountError: boolean
+  memoError: boolean
+  assetErrorMessage: string | null
+  vaultErrorMessage: string | null
+  toAddressErrorMessage: string | null
+  amountErrorMessage: string | null
+  memoErrorMessage: string | null
   validateForm: () => ReturnType<typeof transferFormSchema.safeParse>
 }
 
@@ -69,6 +75,14 @@ export const useTransferFormValidation = ({
   const vaultError = shouldShowError('vault')
   const toAddressError = shouldShowError('toAddress')
   const amountError = shouldShowError('amount')
+  const memoError = shouldShowError('memo')
+
+  // Get error messages for fields that should show errors
+  const assetErrorMessage = assetError ? fieldErrors.asset || null : null
+  const vaultErrorMessage = vaultError ? fieldErrors.vault || null : null
+  const toAddressErrorMessage = toAddressError ? fieldErrors.toAddress || null : null
+  const amountErrorMessage = amountError ? fieldErrors.amount || null : null
+  const memoErrorMessage = memoError ? fieldErrors.memo || null : null
 
   return {
     fieldErrors,
@@ -76,6 +90,12 @@ export const useTransferFormValidation = ({
     vaultError,
     toAddressError,
     amountError,
+    memoError,
+    assetErrorMessage,
+    vaultErrorMessage,
+    toAddressErrorMessage,
+    amountErrorMessage,
+    memoErrorMessage,
     validateForm,
   }
 }

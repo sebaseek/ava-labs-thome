@@ -8,6 +8,7 @@ interface VaultSelectorProps {
   setSelectedVault: (vault: Vault | null) => void
   onFieldClick?: () => void
   hasError?: boolean
+  validationError?: string | null
 }
 
 const VaultSelector = ({
@@ -15,6 +16,7 @@ const VaultSelector = ({
   setSelectedVault,
   onFieldClick,
   hasError = false,
+  validationError,
 }: VaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -61,6 +63,7 @@ const VaultSelector = ({
       errorMessage="An error occurred while loading vaults."
       showExpandedContent={!!vaults}
       hasError={hasError}
+      validationError={validationError}
     >
       <SearchableList
         searchQuery={searchQuery}
