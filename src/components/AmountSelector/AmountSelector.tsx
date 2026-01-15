@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
-import { formatUnits } from 'viem'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { formatUnits, parseUnits } from 'viem'
 import type { Asset } from '@/api/assets'
 import { fetchFee } from '@/api/fee'
 import { fetchBalancesForVault } from '@/api/vault-balances'
@@ -61,28 +61,113 @@ export const AmountSelector = () => {
     return { balance: totalBalance, usdValue, formatted }
   }, [selectedAsset, selectedVault, vaultBalances])
 
-  const { setAmount, displayAmount, hasValue, insufficientBalance, handleAmountChange } =
+  const { amount, setAmount, displayAmount, hasValue, insufficientBalance, handleAmountChange } =
     useAmountInput({
       selectedAsset,
       fee: fee ?? null,
       availableBalance: availableBalance.balance,
     })
 
-  useEffect(() => {
-    if (selectedAsset) {
-      setAmount('0.00')
-    }
-  }, [selectedAsset, setAmount])
+  const [showTooltip, setShowTooltip] = useState(false)
+  const maxButtonRef = useRef<HTMLButtonElement>(null)
+  const tooltipTimeoutRef = useRef<number | null>(null)
 
   const formattedFee = useMemo(() => {
     if (!fee || !selectedAsset) return '0'
     return formatBalance(BigInt(fee), selectedAsset.decimals)
   }, [fee, selectedAsset])
 
-  const handleMaxClick = () => {
-    if (availableBalance.formatted) {
-      setAmount(availableBalance.formatted)
+  // Calculate max amount (available balance minus fee)
+  const maxAmount = useMemo(() => {
+    if (!selectedAsset || !availableBalance.balance) {
+      return { bigInt: BigInt(0), formatted: '0' }
     }
+
+    const feeBigInt = fee ? BigInt(fee) : BigInt(0)
+    const max =
+      availableBalance.balance > feeBigInt ? availableBalance.balance - feeBigInt : BigInt(0)
+
+    return {
+      bigInt: max,
+      formatted: formatBalance(max, selectedAsset.decimals),
+    }
+  }, [selectedAsset, availableBalance.balance, fee])
+
+  // Check if current amount equals max amount
+  const isMaxAmount = useMemo(() => {
+    if (!selectedAsset || !amount || amount === '0' || amount === '0.00' || !maxAmount.formatted) {
+      return false
+    }
+
+    try {
+      const amountWithoutCommas = amount.replace(/,/g, '')
+      const currentAmountBigInt = parseUnits(amountWithoutCommas, selectedAsset.decimals)
+      return currentAmountBigInt === maxAmount.bigInt
+    } catch {
+      return false
+    }
+  }, [amount, maxAmount, selectedAsset])
+
+  // Reset when asset changes
+  useEffect(() => {
+    if (selectedAsset) {
+      setAmount('0.00')
+    }
+    setShowTooltip(false)
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current)
+      tooltipTimeoutRef.current = null
+    }
+  }, [selectedAsset, setAmount])
+
+  // Reset tooltip when amount changes manually
+  useEffect(() => {
+    if (showTooltip && !isMaxAmount) {
+      setShowTooltip(false)
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current)
+        tooltipTimeoutRef.current = null
+      }
+    }
+  }, [showTooltip, isMaxAmount])
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    if (!showTooltip) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (maxButtonRef.current && !maxButtonRef.current.contains(event.target as Node)) {
+        setShowTooltip(false)
+        if (tooltipTimeoutRef.current) {
+          clearTimeout(tooltipTimeoutRef.current)
+          tooltipTimeoutRef.current = null
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showTooltip])
+
+  const handleMaxClick = () => {
+    if (!selectedAsset || !availableBalance.balance) return
+
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current)
+      tooltipTimeoutRef.current = null
+    }
+
+    if (isMaxAmount) {
+      setShowTooltip(true)
+      tooltipTimeoutRef.current = setTimeout(() => {
+        setShowTooltip(false)
+        tooltipTimeoutRef.current = null
+      }, 3000)
+      return
+    }
+
+    setAmount(maxAmount.formatted)
+    setShowTooltip(false)
   }
 
   const hasBalanceError = !!balanceError
@@ -154,19 +239,37 @@ export const AmountSelector = () => {
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={handleMaxClick}
-                className={cn(
-                  'h-[40px] shrink-0 rounded-[8px] px-4',
-                  'bg-blue-5-transparency-30 backdrop-blur-[15px]',
-                  'text-sm font-medium leading-[120%] text-blue-1',
-                  'transition-colors duration-200',
-                  'hover:bg-blue-5/40',
+              <div className="relative shrink-0">
+                <button
+                  ref={maxButtonRef}
+                  type="button"
+                  onClick={handleMaxClick}
+                  className={cn(
+                    'h-[40px] shrink-0 rounded-[8px] px-4',
+                    'bg-blue-5-transparency-30 backdrop-blur-[15px]',
+                    'text-sm font-medium leading-[120%] text-blue-1',
+                    'transition-colors duration-200',
+                    'hover:bg-blue-5/40',
+                  )}
+                >
+                  MAX
+                </button>
+                {showTooltip && (
+                  <div
+                    className={cn(
+                      'absolute right-0 top-full z-50 mt-2',
+                      'rounded-[9px] bg-white p-[15px]',
+                      'backdrop-blur-[40px]',
+                      'shadow-[0px_4px_20px_0px_rgba(104,129,153,0.3)]',
+                      'font-sans text-[14px] font-medium leading-[120%]',
+                      'text-blue-5',
+                      'whitespace-nowrap',
+                    )}
+                  >
+                    You've already entered the maximum amount available for the selected source.
+                  </div>
                 )}
-              >
-                MAX
-              </button>
+              </div>
             </div>
           </div>
         </div>
