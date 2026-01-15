@@ -79,15 +79,20 @@ export const useAmountCalculations = ({
     return formatBalance(BigInt(fee), selectedAsset.decimals)
   }, [fee, selectedAsset])
 
-  // Calculate max amount (available balance minus fee)
+  // Calculate max amount
+  // If balance > fee: max = balance - fee (normal case, can send without error)
+  // If balance <= fee: max = balance (full balance, will show insufficient balance error for fees, which is expected)
   const maxAmount = useMemo(() => {
-    if (!selectedAsset || !availableBalance.balance) {
+    if (!selectedAsset) {
       return { bigInt: BigInt(0), formatted: '0' }
     }
 
     const feeBigInt = fee ? BigInt(fee) : BigInt(0)
-    const max =
-      availableBalance.balance > feeBigInt ? availableBalance.balance - feeBigInt : BigInt(0)
+    const balance = availableBalance.balance || BigInt(0)
+    
+    // If fees exceed or equal balance, set max to full balance (user will see error, which is expected)
+    // Otherwise, set max to balance - fee (normal case)
+    const max = balance > feeBigInt ? balance - feeBigInt : balance
 
     return {
       bigInt: max,

@@ -53,8 +53,9 @@ export const AmountSelector = ({
   })
 
   const handleMaxClick = () => {
-    if (!selectedAsset || !availableBalance.balance) return
-    // handleAmountChange will clean the formatted value (remove commas) before setting
+    if (!selectedAsset) return
+    // Always set to max amount, even if it's 0 (when fees exceed balance)
+    // This will show the insufficient balance error, which is expected
     handleAmountChange(maxAmount.formatted)
   }
 
