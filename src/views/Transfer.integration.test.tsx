@@ -269,7 +269,7 @@ describe('Transfer Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Vault 1')).toBeInTheDocument()
       })
-      
+
       const toField = screen.getByText('To')
       await user.click(toField)
 
@@ -653,10 +653,24 @@ describe('Transfer Integration Tests', () => {
       const user = userEvent.setup()
       renderWithProviders(<Transfer />)
 
-      await user.click(screen.getByText('From'))
+      // Select asset first (required for vaults to load)
+      await user.click(screen.getByText('Asset'))
       await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
+        expect(screen.getByText('AVAX')).toBeInTheDocument()
       })
+      const avaxOption = screen.getByText('AVAX').closest('button')
+      if (avaxOption) {
+        await user.click(avaxOption)
+      }
+
+      // Wait for vaults to load after asset is selected
+      await user.click(screen.getByText('From'))
+      await waitFor(
+        () => {
+          expect(screen.getByText('Vault 1')).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
 
       // Search for Vault 2
       const searchInput = screen.getByPlaceholderText('Search')
@@ -680,6 +694,19 @@ describe('Transfer Integration Tests', () => {
       const avaxOption = screen.getByText('AVAX').closest('button')
       if (avaxOption) {
         await user.click(avaxOption)
+      }
+
+      // Select vault (required for addresses to load)
+      await user.click(screen.getByText('From'))
+      await waitFor(
+        () => {
+          expect(screen.getByText('Vault 1')).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+      const vault1Option = screen.getByText('Vault 1').closest('button')
+      if (vault1Option) {
+        await user.click(vault1Option)
       }
 
       // Open To selector
@@ -815,6 +842,19 @@ describe('Transfer Integration Tests', () => {
       // Select asset and destination
       await user.click(screen.getByText('Asset'))
       await findAndClickSelectableItem(user, 'AVAX')
+
+      // Select vault (required for addresses to load)
+      await user.click(screen.getByText('From'))
+      await waitFor(
+        () => {
+          expect(screen.getByText('Vault 1')).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+      const vault1Option = screen.getByText('Vault 1').closest('button')
+      if (vault1Option) {
+        await user.click(vault1Option)
+      }
 
       await user.click(screen.getByText('To'))
       await clickAccountByIndex(user, 0)

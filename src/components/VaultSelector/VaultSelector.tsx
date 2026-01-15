@@ -28,7 +28,7 @@ const VaultSelector = ({
   // Check if assets are loaded (not loading) first
   const assetsQueryState = queryClient.getQueryState(['assets'])
   const assetsLoaded = assetsQueryState?.status === 'success'
-  const assetsLoading = assetsQueryState?.status === 'loading'
+  const assetsLoading = assetsQueryState?.fetchStatus === 'fetching' || false
 
   // Only fetch vaults after assets are loaded (not while assets are loading)
   const {

@@ -46,19 +46,15 @@ const ToVaultSelector = ({
   // Check if assets are loaded (not loading) first
   const assetsQueryState = queryClient.getQueryState(['assets'])
   const assetsLoaded = assetsQueryState?.status === 'success'
-  const assetsLoading = assetsQueryState?.status === 'loading'
+  const assetsLoading = assetsQueryState?.fetchStatus === 'fetching' || false
 
   // Check if vaults are loaded (not loading)
   const vaultsQueryState = queryClient.getQueryState(['vaults'])
   const vaultsLoaded = vaultsQueryState?.status === 'success'
-  const vaultsLoading = vaultsQueryState?.status === 'loading'
+  const vaultsLoading = vaultsQueryState?.fetchStatus === 'fetching' || false
 
   // Fetch vaults for filter tabs - only after assets are loaded
-  const {
-    data: vaults,
-    isLoading: isLoadingVaults,
-    error: vaultError,
-  } = useQuery({
+  const { data: vaults } = useQuery({
     queryKey: ['vaults'],
     queryFn: fetchVaults,
     enabled: assetsLoaded, // Only enable after assets are successfully loaded
