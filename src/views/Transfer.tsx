@@ -1,6 +1,7 @@
 import {
   AmountSelector,
   AssetSelector,
+  Memo,
   ToVaultSelector,
   Typography,
   VaultSelector,
@@ -35,6 +36,8 @@ export const Transfer = () => {
             <ToVaultSelector />
             {/* Amount Selector */}
             <AmountSelector />
+            {/* Memo */}
+            <Memo />
           </div>
         </div>
       </div>
