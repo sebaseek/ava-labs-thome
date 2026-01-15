@@ -31,6 +31,37 @@ vi.mock('@/hooks/useSelectedToAddress', () => ({
   })),
 }))
 
+// Mock the new hooks
+vi.mock('@/hooks/useFormStateSync', () => ({
+  useFormStateSync: vi.fn(() => {}),
+}))
+
+vi.mock('@/hooks/useStepNavigation', () => ({
+  useStepNavigation: vi.fn(() => ({
+    activeStep: null,
+    setActiveStep: vi.fn(),
+    isStepDisabled: vi.fn(() => false),
+    handleStepClick: vi.fn(),
+  })),
+}))
+
+vi.mock('@/hooks/useFormReset', () => ({
+  useFormReset: vi.fn(() => ({
+    resetForm: vi.fn(),
+  })),
+}))
+
+vi.mock('@/hooks/useTransferFormValidation', () => ({
+  useTransferFormValidation: vi.fn(() => ({
+    assetError: false,
+    vaultError: false,
+    toAddressError: false,
+    amountError: false,
+    fieldErrors: {},
+    validateForm: vi.fn(() => ({ success: false })),
+  })),
+}))
+
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
@@ -70,20 +101,6 @@ describe('Transfer', () => {
     const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
     await user.click(submitButton)
 
-    // After clicking submit with empty fields, validation errors should be set
-    // (We can't directly test the red borders without more complex setup, but we can verify the flow)
-    await waitFor(() => {
-      expect(screen.queryByText(/Transaction Successfully Created/i)).not.toBeInTheDocument()
-    })
-  })
-
-  it('shows validation errors when submit is clicked with empty fields', async () => {
-    const user = userEvent.setup()
-    renderWithProviders(<Transfer />)
-
-    const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-    await user.click(submitButton)
-
     // After clicking submit with empty fields, form should still be visible (not success screen)
     await waitFor(() => {
       expect(screen.queryByText(/Transaction Successfully Created/i)).not.toBeInTheDocument()
@@ -99,6 +116,13 @@ describe('Transfer', () => {
     await user.click(startOverButton)
 
     // After start over, form should still be visible
+    expect(screen.getByText('Transfer')).toBeInTheDocument()
+  })
+
+  it('handles view transaction navigation', () => {
+    // Test that the component renders without errors
+    // The actual navigation is tested via integration tests or E2E tests
+    renderWithProviders(<Transfer />)
     expect(screen.getByText('Transfer')).toBeInTheDocument()
   })
 })

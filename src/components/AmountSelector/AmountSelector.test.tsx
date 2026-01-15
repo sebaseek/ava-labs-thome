@@ -30,7 +30,35 @@ vi.mock('@/hooks/useSelectedVault', () => ({
   })),
 }))
 
-// Mock API calls
+// Mock the new hooks
+vi.mock('@/hooks/useAmountCalculations', () => ({
+  useAmountCalculations: vi.fn(() => ({
+    fee: '100000000000000000',
+    feeError: null,
+    balanceError: null,
+    availableBalance: {
+      balance: BigInt('1000000000000000000'),
+      usdValue: 20,
+      formatted: '1',
+    },
+    formattedFee: '0.1',
+    maxAmount: {
+      bigInt: BigInt('900000000000000000'),
+      formatted: '0.9',
+    },
+    isMaxAmount: false,
+  })),
+}))
+
+vi.mock('@/hooks/useBalanceDisplay', () => ({
+  useBalanceDisplay: vi.fn(() => ({
+    hasBalanceError: false,
+    hasInputError: false,
+    displayText: '$ 20.00 ≈ 1 VET',
+  })),
+}))
+
+// Mock API calls (still needed for useAmountInput)
 vi.mock('@/api/fee', () => ({
   fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 VET
 }))
