@@ -28,7 +28,7 @@ test.describe('Form Interactions', () => {
   })
 
   test('should interact with amount input field', async ({ page }) => {
-    // First select an asset to enable amount input
+    // First select an asset
     const assetField = page.getByText(/select asset/i).first()
     await assetField.click()
     
@@ -41,17 +41,30 @@ test.describe('Form Interactions', () => {
       await assetOption.click()
       await page.waitForTimeout(500)
       
+      // Now select a vault (required to enable amount input)
+      const vaultField = page.getByText(/select source/i).first()
+      if (await vaultField.isVisible().catch(() => false)) {
+        await vaultField.click()
+        await page.waitForTimeout(500)
+        
+        // Select first available vault option (button with vault name)
+        const vaultOption = page.locator('button[data-slot="selectable-item"]').first()
+        if (await vaultOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await vaultOption.click()
+          await page.waitForTimeout(500)
+        }
+      }
+      
       // Now amount input should be enabled
       const amountInput = page.getByPlaceholder(/0\.00/i).first()
-      if (await amountInput.isVisible().catch(() => false)) {
-        await amountInput.fill('100.50')
-        // Amount input may normalize trailing zeros (100.50 -> 100.5)
-        await expect(amountInput).toHaveValue(/100\.5/)
-      }
+      await expect(amountInput).toBeEnabled({ timeout: 5000 })
+      await amountInput.fill('100.50')
+      // Amount input may normalize trailing zeros (100.50 -> 100.5)
+      await expect(amountInput).toHaveValue(/100\.5/)
     }
   })
 
-  test('should display Max button when asset is selected', async ({ page }) => {
+  test('should display Max button when asset and vault are selected', async ({ page }) => {
     const assetField = page.getByText(/select asset/i).first()
     await assetField.click()
     await page.waitForTimeout(500)
@@ -61,10 +74,21 @@ test.describe('Form Interactions', () => {
       await assetOption.click()
       await page.waitForTimeout(500)
       
-      // Check for Max button
-      const maxButton = page.getByRole('button', { name: /max/i })
-      if (await maxButton.isVisible().catch(() => false)) {
-        await expect(maxButton).toBeVisible()
+      // Select a vault (required for Max button to appear)
+      const vaultField = page.getByText(/select source/i).first()
+      if (await vaultField.isVisible().catch(() => false)) {
+        await vaultField.click()
+        await page.waitForTimeout(500)
+        
+        const vaultOption = page.locator('button[data-slot="selectable-item"]').first()
+        if (await vaultOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await vaultOption.click()
+          await page.waitForTimeout(500)
+          
+          // Check for Max button
+          const maxButton = page.getByRole('button', { name: /max/i })
+          await expect(maxButton).toBeVisible({ timeout: 2000 })
+        }
       }
     }
   })
