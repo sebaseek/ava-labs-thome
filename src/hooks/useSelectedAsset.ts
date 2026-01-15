@@ -3,7 +3,7 @@ import type { Asset } from '@/api/assets'
 
 /**
  * Hook to get and set the selected asset
- * Uses React Query cache as state store (consider migrating to Context/Zustand for better state management)
+ * Uses React Query cache as state store
  */
 export const useSelectedAsset = () => {
   const queryClient = useQueryClient()
