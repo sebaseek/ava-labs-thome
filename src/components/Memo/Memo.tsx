@@ -9,7 +9,13 @@ interface MemoProps {
   validationError?: string | null
 }
 
-export const Memo = ({ value, onChange, onFieldClick, hasError = false, validationError }: MemoProps) => {
+export const Memo = ({
+  value,
+  onChange,
+  onFieldClick,
+  hasError = false,
+  validationError,
+}: MemoProps) => {
   const showValidationError = hasError && validationError
 
   return (

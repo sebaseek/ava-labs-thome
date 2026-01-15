@@ -70,8 +70,8 @@ vi.mock('@/api/vault-balances', () => ({
   },
 }))
 
-vi.mock('@/api/addresses', () => ({
-  networkToVaultToAddresses: {
+vi.mock('@/api/addresses', () => {
+  const mockAddresses = {
     'eip155:43113': {
       '1': [
         {
@@ -96,10 +96,20 @@ vi.mock('@/api/addresses', () => ({
         },
       ],
     },
-  },
-  // Export the addresses for use in tests
-  fetchAddresses: vi.fn(() => Promise.resolve([])),
-}))
+  }
+
+  return {
+    networkToVaultToAddresses: mockAddresses,
+    fetchAddressesForVault: vi.fn((networkId: string, vaultId: string) => {
+      const addresses = mockAddresses[networkId as keyof typeof mockAddresses]?.[vaultId]
+      if (!addresses) {
+        return Promise.reject(new Error(`Vault ${vaultId} not found in network ${networkId}`))
+      }
+      // Return immediately for tests (no delay)
+      return Promise.resolve(addresses)
+    }),
+  }
+})
 
 const createTestQueryClient = () =>
   new QueryClient({

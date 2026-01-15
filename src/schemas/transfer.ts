@@ -51,10 +51,7 @@ export const transferFormSchema = z.object({
         message: 'Please enter an amount greater than zero',
       },
     ),
-  memo: z
-    .string()
-    .min(1, 'Please enter a memo')
-    .max(256, 'Memo must be 256 characters or less'),
+  memo: z.string().min(1, 'Please enter a memo').max(256, 'Memo must be 256 characters or less'),
 })
 
 export type TransferFormValues = z.infer<typeof transferFormSchema>
