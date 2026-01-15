@@ -19,7 +19,6 @@ export const AmountInput = ({
   onChange,
   placeholder = '0.00',
   hasError = false,
-  hasValue = false,
   selectedAsset,
   onFocus,
 }: AmountInputProps) => {

@@ -24,6 +24,7 @@ describe('useBalanceDisplay', () => {
       useBalanceDisplay({
         balanceError: mockError,
         insufficientBalance: null,
+        totalNeeded: null,
         availableBalance: {
           balance: BigInt(0),
           usdValue: 0,
@@ -65,6 +66,7 @@ describe('useBalanceDisplay', () => {
       useBalanceDisplay({
         balanceError: null,
         insufficientBalance: null,
+        totalNeeded: null,
         availableBalance: {
           balance: BigInt(0),
           usdValue: 0,
@@ -82,6 +84,7 @@ describe('useBalanceDisplay', () => {
       useBalanceDisplay({
         balanceError: null,
         insufficientBalance: null,
+        totalNeeded: null,
         availableBalance: {
           balance: BigInt(1000000000000000000),
           usdValue: 20.5,
@@ -103,6 +106,7 @@ describe('useBalanceDisplay', () => {
       useBalanceDisplay({
         balanceError: null,
         insufficientBalance: null,
+        totalNeeded: null,
         availableBalance: {
           balance: BigInt(0),
           usdValue: 0,

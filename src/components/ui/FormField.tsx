@@ -6,7 +6,6 @@ export interface FormFieldProps {
   children: ReactNode
   className?: string
   labelWidth?: string
-  gap?: string
 }
 
 /**
@@ -18,7 +17,6 @@ export const FormField = ({
   children,
   className,
   labelWidth = 'w-[120px]',
-  gap = 'gap-[80px]',
 }: FormFieldProps) => {
   return (
     <div className={cn('flex h-auto w-full flex-col px-4 sm:px-[25px]', className)}>
