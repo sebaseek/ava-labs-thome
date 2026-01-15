@@ -13,6 +13,7 @@ A transaction request interface for institutional custody, demonstrating product
 - **Schema Validation**: Zod
 - **BigInt Utilities**: Viem
 - **Code Quality**: Biome (linting & formatting)
+- **Testing**: Vitest + Testing Library
 
 ## 📦 Getting Started
 
@@ -23,6 +24,7 @@ A transaction request interface for institutional custody, demonstrating product
 
 ### Installation
 
+```bash
 # Install dependencies
 pnpm install
 
@@ -34,3 +36,13 @@ pnpm build
 
 # Preview production build
 pnpm preview
+
+# Run tests
+pnpm test
+
+# Lint code
+pnpm lint
+
+# Format code
+pnpm format
+```
