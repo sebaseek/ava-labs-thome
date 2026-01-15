@@ -3,7 +3,7 @@ import type { Vault } from '@/api/vaults'
 
 /**
  * Hook to get and set the selected vault
- * Uses React Query cache as state store (consider migrating to Context/Zustand for better state management)
+ * Uses React Query cache as state store
  */
 export const useSelectedVault = () => {
   const queryClient = useQueryClient()

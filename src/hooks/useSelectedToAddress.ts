@@ -3,7 +3,7 @@ import type { Address } from '@/api/addresses'
 
 /**
  * Hook to get and set the selected destination address
- * Uses React Query cache as state store (consider migrating to Context/Zustand for better state management)
+ * Uses React Query cache as state store
  */
 export const useSelectedToAddress = () => {
   const queryClient = useQueryClient()
