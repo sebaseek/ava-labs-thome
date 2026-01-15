@@ -1,13 +1,35 @@
+import { useState } from 'react'
 import {
   AmountSelector,
   AssetSelector,
   Memo,
+  NavigationControl,
   ToVaultSelector,
   Typography,
   VaultSelector,
 } from '@/components'
+import { useSelectedAsset } from '@/hooks/useSelectedAsset'
+import { useSelectedToAddress } from '@/hooks/useSelectedToAddress'
+import { useSelectedVault } from '@/hooks/useSelectedVault'
 
 export const Transfer = () => {
+  const { setSelectedAsset } = useSelectedAsset()
+  const { setSelectedVault } = useSelectedVault()
+  const { setSelectedAddress } = useSelectedToAddress()
+  const [memo, setMemo] = useState('')
+
+  const handleStartOver = () => {
+    setSelectedAsset(null)
+    setSelectedVault(null)
+    setSelectedAddress(null)
+    setMemo('')
+  }
+
+  const handleSubmitTransfer = () => {
+    // TODO: Implement submit transfer functionality
+    console.log('Submit Transfer clicked')
+  }
+
   return (
     <div
       className="min-h-screen p-4 md:p-8"
@@ -37,7 +59,12 @@ export const Transfer = () => {
             {/* Amount Selector */}
             <AmountSelector />
             {/* Memo */}
-            <Memo />
+            <Memo value={memo} onChange={setMemo} />
+            {/* Navigation Control */}
+            <NavigationControl
+              onStartOver={handleStartOver}
+              onSubmitTransfer={handleSubmitTransfer}
+            />
           </div>
         </div>
       </div>
