@@ -34,7 +34,7 @@ interface UseTransferFormValidationReturn {
 export const useTransferFormValidation = ({
   form,
   hasAttemptedSubmit,
-  touchedFields,
+  touchedFields: _touchedFields,
 }: UseTransferFormValidationOptions): UseTransferFormValidationReturn => {
   // Validate form values using Zod schema - reads from form state
   const validateForm = useCallback(() => {

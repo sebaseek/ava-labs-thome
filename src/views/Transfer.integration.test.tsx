@@ -98,23 +98,29 @@ vi.mock('@/api/addresses', () => {
     },
   }
 
+  const fetchAddressesForVaultMock = vi.fn((networkId: string, vaultId: string) => {
+    const network = mockAddresses[networkId as keyof typeof mockAddresses]
+    if (!network) {
+      return Promise.reject(new Error(`Network ${networkId} not found`))
+    }
+    const addresses = network[vaultId as keyof typeof network]
+    if (!addresses) {
+      return Promise.reject(new Error(`Vault ${vaultId} not found in network ${networkId}`))
+    }
+    // Return immediately for tests (no delay) but as a resolved promise
+    return Promise.resolve(addresses)
+  })
+
   return {
     networkToVaultToAddresses: mockAddresses,
-    fetchAddressesForVault: vi.fn((networkId: string, vaultId: string) => {
-      const addresses = mockAddresses[networkId as keyof typeof mockAddresses]?.[vaultId]
-      if (!addresses) {
-        return Promise.reject(new Error(`Vault ${vaultId} not found in network ${networkId}`))
-      }
-      // Return immediately for tests (no delay)
-      return Promise.resolve(addresses)
-    }),
+    fetchAddressesForVault: fetchAddressesForVaultMock,
   }
 })
 
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
+      queries: { retry: false, gcTime: 0, refetchOnWindowFocus: false },
     },
   })
 
@@ -164,15 +170,41 @@ const findAndClickSelectableItem = async (
   }
 }
 
+// Helper to wait for addresses to load
+const waitForAddressesToLoad = async () => {
+  await waitFor(
+    () => {
+      // Wait for either accounts to appear OR filter tabs to appear (both indicate addresses loaded)
+      const accountElements = screen.queryAllByText(/Account \d+/)
+      const allButton = screen.queryByText(/All/i)
+      // Addresses are loaded if we see accounts OR the filter tabs (which only show when addresses are loaded)
+      if (accountElements.length === 0 && !allButton) {
+        throw new Error('Addresses not loaded yet')
+      }
+    },
+    { timeout: 10000 },
+  )
+}
+
 // Helper to click on an account by index, handling multiple accounts
 const clickAccountByIndex = async (
   user: ReturnType<typeof userEvent.setup>,
   accountIndex: number = 0,
 ) => {
+  // Wait for addresses to load first
+  await waitForAddressesToLoad()
+
   const accountText = `Account ${accountIndex}`
-  await waitFor(() => {
-    expect(screen.getAllByText(accountText).length).toBeGreaterThan(0)
-  })
+  // Wait for the specific account to appear
+  await waitFor(
+    () => {
+      const targetAccount = screen.queryAllByText(accountText)
+      if (targetAccount.length === 0) {
+        throw new Error(`Account ${accountIndex} not found`)
+      }
+    },
+    { timeout: 2000 },
+  )
 
   const accountElements = screen.getAllByText(accountText)
   // Find the one that's in a clickable button/container
@@ -233,10 +265,16 @@ describe('Transfer Integration Tests', () => {
       })
 
       // Step 3: Select Destination Address
+      // Wait for vaults to be fully loaded first (addresses depend on vaults)
+      await waitFor(() => {
+        expect(screen.getByText('Vault 1')).toBeInTheDocument()
+      })
+      
       const toField = screen.getByText('To')
       await user.click(toField)
 
-      // Select first account using helper
+      // Wait for addresses to load, then select first account
+      await waitForAddressesToLoad()
       await clickAccountByIndex(user, 0)
 
       // Step 4: Enter Amount
@@ -646,6 +684,9 @@ describe('Transfer Integration Tests', () => {
 
       // Open To selector
       await user.click(screen.getByText('To'))
+      // Wait for addresses to load
+      await waitForAddressesToLoad()
+      // Then check that the filter tabs appear
       await waitFor(() => {
         expect(screen.getByText(/All/i)).toBeInTheDocument()
       })

@@ -64,7 +64,9 @@ const ToVaultSelector = ({
   })
 
   // Check if any query is loading or has error
-  const isLoadingAddresses = addressQueries.some((query) => query.isLoading)
+  // Consider addresses loaded if at least one query has data (partial loading is OK)
+  const isLoadingAddresses =
+    addressQueries.length > 0 && addressQueries.every((query) => query.isLoading)
   const addressError = addressQueries.find((query) => query.error)?.error || null
 
   // Show loading if vaults are loading OR addresses are loading
@@ -91,7 +93,12 @@ const ToVaultSelector = ({
 
   // Get all addresses for the selected network, grouped by vault
   const accountsWithBalances = useMemo(() => {
-    if (!selectedAsset || isLoadingAddresses || addressError) {
+    if (!selectedAsset || addressError) {
+      return []
+    }
+    // Don't wait for all queries - show accounts as soon as we have some addresses
+    // Only block if we're still loading AND have no data at all
+    if (isLoadingAddresses && Object.keys(allAddresses).length === 0) {
       return []
     }
 
