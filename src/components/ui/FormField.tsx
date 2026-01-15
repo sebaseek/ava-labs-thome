@@ -21,13 +21,13 @@ export const FormField = ({
   gap = 'gap-[80px]',
 }: FormFieldProps) => {
   return (
-    <div className={cn('flex h-auto w-full flex-col px-[25px] py-[15px]', className)}>
+    <div className={cn('flex h-auto w-full flex-col px-[25px]', className)}>
       <div className="flex h-[80px] items-center">
         <div className={cn('flex w-full items-center', gap)}>
           <span
             className={cn(
               labelWidth,
-              'shrink-0 text-base font-semibold leading-[19px] text-blue-1',
+              'shrink-0 text-left text-base font-semibold leading-[19px] text-blue-1',
             )}
           >
             {label}

@@ -1,4 +1,3 @@
-import type { Asset } from '@/api/assets'
 import { cn } from '@/components/utils'
 
 export interface BalanceDisplayProps {

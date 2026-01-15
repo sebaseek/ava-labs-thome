@@ -131,7 +131,7 @@ export const AmountSelector = () => {
 
   return (
     <Card>
-      <div className="flex h-auto w-full flex-col px-[25px] py-[15px]">
+      <div className="flex h-auto w-full flex-col">
         <FormField label="Amount">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <AmountInput
@@ -146,11 +146,17 @@ export const AmountSelector = () => {
           </div>
         </FormField>
 
-        <BalanceDisplay availableBalanceDisplay={availableBalanceDisplay} hasError={hasError} />
+        <div className="px-[25px] py-[15px]">
+          <BalanceDisplay availableBalanceDisplay={availableBalanceDisplay} hasError={hasError} />
 
-        <div className="my-2 h-[1px] w-full bg-blue-5-transparency-30" />
+          <div className="my-2 h-[1px] w-full bg-blue-5-transparency-30" />
 
-        <FeeDisplay formattedFee={formattedFee} selectedAsset={selectedAsset} feeError={feeError} />
+          <FeeDisplay
+            formattedFee={formattedFee}
+            selectedAsset={selectedAsset}
+            feeError={feeError}
+          />
+        </div>
       </div>
     </Card>
   )
