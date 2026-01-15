@@ -4,7 +4,11 @@ import { fetchVaults, type Vault } from '@/api/vaults'
 import { EmptyState, SearchableList, SelectableField, SelectableItem } from '@/components/ui'
 import { useSelectedVault } from '@/hooks/useSelectedVault'
 
-const VaultSelector = () => {
+interface VaultSelectorProps {
+  onFieldClick?: () => void
+}
+
+const VaultSelector = ({ onFieldClick }: VaultSelectorProps = {}) => {
   const { selectedVault, setSelectedVault } = useSelectedVault()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -39,7 +43,10 @@ const VaultSelector = () => {
     <SelectableField
       label="From"
       isOpen={isOpen}
-      onToggle={() => setIsOpen(!isOpen)}
+      onToggle={() => {
+        setIsOpen(!isOpen)
+        onFieldClick?.()
+      }}
       isLoading={isLoading}
       error={error}
       content={selectedContent}

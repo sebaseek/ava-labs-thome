@@ -8,6 +8,7 @@ export interface AmountInputProps {
   hasError?: boolean
   hasValue?: boolean
   selectedAsset: Asset | null
+  onFocus?: () => void
 }
 
 /**
@@ -20,6 +21,7 @@ export const AmountInput = ({
   hasError = false,
   hasValue = false,
   selectedAsset,
+  onFocus,
 }: AmountInputProps) => {
   return (
     <div className="relative min-w-0 flex-1">
@@ -27,6 +29,7 @@ export const AmountInput = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         placeholder={placeholder}
         className={cn(
           'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-20 py-1',

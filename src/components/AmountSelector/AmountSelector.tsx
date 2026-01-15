@@ -14,7 +14,11 @@ import { BalanceDisplay } from './BalanceDisplay'
 import { FeeDisplay } from './FeeDisplay'
 import { MaxButton } from './MaxButton'
 
-export const AmountSelector = () => {
+interface AmountSelectorProps {
+  onFieldClick?: () => void
+}
+
+export const AmountSelector = ({ onFieldClick }: AmountSelectorProps = {}) => {
   const { selectedAsset } = useSelectedAsset()
   const { selectedVault } = useSelectedVault()
 
@@ -137,6 +141,7 @@ export const AmountSelector = () => {
             <AmountInput
               value={displayAmount}
               onChange={handleAmountChange}
+              onFocus={onFieldClick}
               placeholder="0.00"
               hasError={hasError}
               hasValue={hasValue}

@@ -4,9 +4,10 @@ import { cn } from '@/components/utils'
 interface MemoProps {
   value: string
   onChange: (value: string) => void
+  onFieldClick?: () => void
 }
 
-export const Memo = ({ value, onChange }: MemoProps) => {
+export const Memo = ({ value, onChange, onFieldClick }: MemoProps) => {
   return (
     <Card>
       <FormField label="Memo">
@@ -14,6 +15,8 @@ export const Memo = ({ value, onChange }: MemoProps) => {
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={onFieldClick}
+          onClick={onFieldClick}
           placeholder="Enter a memo"
           className={cn(
             'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-4 py-1',

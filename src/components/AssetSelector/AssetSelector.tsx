@@ -8,7 +8,11 @@ import { useSelectedAsset } from '@/hooks/useSelectedAsset'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
 import { calculateTotalBalance, formatBalance } from '@/utils/balance'
 
-const AssetSelector = () => {
+interface AssetSelectorProps {
+  onFieldClick?: () => void
+}
+
+const AssetSelector = ({ onFieldClick }: AssetSelectorProps = {}) => {
   const { selectedAsset, setSelectedAsset } = useSelectedAsset()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -91,7 +95,10 @@ const AssetSelector = () => {
     <SelectableField
       label="Asset"
       isOpen={isOpen}
-      onToggle={() => setIsOpen(!isOpen)}
+      onToggle={() => {
+        setIsOpen(!isOpen)
+        onFieldClick?.()
+      }}
       isLoading={isLoading}
       error={error}
       content={selectedContent}

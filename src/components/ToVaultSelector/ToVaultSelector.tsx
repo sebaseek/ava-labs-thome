@@ -21,7 +21,11 @@ interface AccountWithBalance {
   usdValue: number
 }
 
-const ToVaultSelector = () => {
+interface ToVaultSelectorProps {
+  onFieldClick?: () => void
+}
+
+const ToVaultSelector = ({ onFieldClick }: ToVaultSelectorProps = {}) => {
   const { selectedAsset } = useSelectedAsset()
   const { selectedAddress, setSelectedAddress } = useSelectedToAddress()
   const [isOpen, setIsOpen] = useState(false)
@@ -144,7 +148,10 @@ const ToVaultSelector = () => {
     <SelectableField
       label="To"
       isOpen={isOpen}
-      onToggle={() => setIsOpen(!isOpen)}
+      onToggle={() => {
+        setIsOpen(!isOpen)
+        onFieldClick?.()
+      }}
       isLoading={isLoading}
       error={error}
       content={selectedContent}
