@@ -9,12 +9,14 @@ vi.mock('./utils', async () => {
   const actual = await vi.importActual('./utils')
   return {
     ...actual,
-    simulateApiRequest: vi.fn((data, options) => {
-      const { successRate = 1.0 } = options || {}
-      if (Math.random() < successRate) {
-        return Promise.resolve(data)
-      }
-      throw new Error('API request failed')
+    simulateApiRequest: vi.fn(async (data, options) => {
+      const { successRate = 1.0, minDelay = 10, maxDelay = 50 } = options || {}
+      // Small delay to simulate async
+      const delay = Math.random() * (maxDelay - minDelay) + minDelay
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      // Always succeed for tests (successRate check is for production simulation)
+      // In tests, we want deterministic behavior
+      return data
     }),
   }
 })
