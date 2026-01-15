@@ -8,12 +8,12 @@ import { AmountSelector } from './AmountSelector'
 // Mock the hooks
 const mockSelectedAsset = {
   id: '1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: '1',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 const mockSelectedVault = { id: '1', name: 'Vault 1' }
@@ -54,19 +54,19 @@ vi.mock('@/hooks/useBalanceDisplay', () => ({
   useBalanceDisplay: vi.fn(() => ({
     hasBalanceError: false,
     hasInputError: false,
-    displayText: '$ 20.00 ≈ 1 VET',
+    displayText: '$ 20.00 ≈ 1 AVAX',
   })),
 }))
 
 // Mock API calls (still needed for useAmountInput)
 vi.mock('@/api/fee', () => ({
-  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 VET
+  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 AVAX
 }))
 
 vi.mock('@/api/vault-balances', () => ({
   fetchBalancesForVault: vi.fn(() =>
     Promise.resolve([
-      { balance: '1000000000000000000', accountIndex: 0 }, // 1 VET
+      { balance: '1000000000000000000', accountIndex: 0 }, // 1 AVAX
     ]),
   ),
 }))

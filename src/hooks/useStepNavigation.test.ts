@@ -6,13 +6,12 @@ import { useStepNavigation } from './useStepNavigation'
 
 const mockAsset: Asset = {
   id: 'asset-1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: 'network-1',
-  coinGeckoId: 'vechain',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 const mockVault: Vault = {

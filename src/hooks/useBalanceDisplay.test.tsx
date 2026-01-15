@@ -5,13 +5,12 @@ import { useBalanceDisplay } from './useBalanceDisplay'
 
 const mockAsset: Asset = {
   id: 'asset-1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: 'network-1',
-  coinGeckoId: 'vechain',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 describe('useBalanceDisplay', () => {
@@ -56,7 +55,7 @@ describe('useBalanceDisplay', () => {
     expect(result.current.hasInputError).toBe(true)
     expect(result.current.displayText).toContain('Insufficient balance for fee')
     expect(result.current.displayText).toContain('0.5')
-    expect(result.current.displayText).toContain('VET')
+    expect(result.current.displayText).toContain('AVAX')
   })
 
   it('shows placeholder when no asset or zero balance', () => {
@@ -94,7 +93,7 @@ describe('useBalanceDisplay', () => {
     expect(result.current.displayText).toContain('$')
     expect(result.current.displayText).toContain('20.50')
     expect(result.current.displayText).toContain('1')
-    expect(result.current.displayText).toContain('VET')
+    expect(result.current.displayText).toContain('AVAX')
   })
 
   it('handles zero balance correctly', () => {

@@ -10,13 +10,12 @@ import { useTransferFormValidation } from './useTransferFormValidation'
 
 const mockAsset: Asset = {
   id: 'asset-1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: 'network-1',
-  coinGeckoId: 'vechain',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 const mockVault: Vault = {
@@ -62,7 +61,7 @@ describe('useTransferFormValidation', () => {
         })
 
         return useTransferFormValidation({
-          form,
+          form: form as any,
           selectedAsset: mockAsset,
           selectedVault: mockVault,
           selectedAddress: mockAddress,
@@ -93,7 +92,7 @@ describe('useTransferFormValidation', () => {
         })
 
         return useTransferFormValidation({
-          form,
+          form: form as any,
           selectedAsset: null,
           selectedVault: null,
           selectedAddress: null,
@@ -124,7 +123,7 @@ describe('useTransferFormValidation', () => {
         })
 
         return useTransferFormValidation({
-          form,
+          form: form as any,
           selectedAsset: mockAsset,
           selectedVault: mockVault,
           selectedAddress: mockAddress,
@@ -152,7 +151,7 @@ describe('useTransferFormValidation', () => {
         })
 
         return useTransferFormValidation({
-          form,
+          form: form as any,
           selectedAsset: null,
           selectedVault: mockVault,
           selectedAddress: mockAddress,
@@ -180,7 +179,7 @@ describe('useTransferFormValidation', () => {
         })
 
         return useTransferFormValidation({
-          form,
+          form: form as any,
           selectedAsset: mockAsset,
           selectedVault: mockVault,
           selectedAddress: mockAddress,

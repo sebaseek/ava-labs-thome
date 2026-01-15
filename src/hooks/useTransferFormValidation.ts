@@ -1,12 +1,12 @@
-import type { FormApi } from '@tanstack/react-form'
 import { useCallback, useMemo } from 'react'
 import type { Address } from '@/api/addresses'
 import type { Asset } from '@/api/assets'
 import type { Vault } from '@/api/vaults'
 import { type TransferFormValues, transferFormSchema } from '@/schemas/transfer'
+import type { FormType } from './form-types'
 
 interface UseTransferFormValidationOptions {
-  form: FormApi<TransferFormValues>
+  form: FormType
   selectedAsset: Asset | null
   selectedVault: Vault | null
   selectedAddress: Address | null

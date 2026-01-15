@@ -4,12 +4,12 @@ import { useAmountInput } from './useAmountInput'
 
 const mockAsset = {
   id: '1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
   logoUri: '/logo.png',
   networkId: '1',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 describe('useAmountInput', () => {
@@ -139,13 +139,13 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: '100000000000000000', // 0.1 VET
-        availableBalance: BigInt(1000000000000000000), // 1 VET
+        fee: '100000000000000000', // 0.1 AVAX
+        availableBalance: BigInt(1000000000000000000), // 1 AVAX
       }),
     )
 
     act(() => {
-      result.current.handleAmountChange('1.5') // 1.5 VET + 0.1 fee = 1.6 VET needed, but only 1 VET available
+      result.current.handleAmountChange('1.5') // 1.5 AVAX + 0.1 fee = 1.6 AVAX needed, but only 1 AVAX available
     })
 
     expect(result.current.insufficientBalance).not.toBeNull()
@@ -155,13 +155,13 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: '100000000000000000', // 0.1 VET
-        availableBalance: BigInt(2000000000000000000), // 2 VET
+        fee: '100000000000000000', // 0.1 AVAX
+        availableBalance: BigInt(2000000000000000000), // 2 AVAX
       }),
     )
 
     act(() => {
-      result.current.handleAmountChange('1.5') // 1.5 VET + 0.1 fee = 1.6 VET needed, 2 VET available
+      result.current.handleAmountChange('1.5') // 1.5 AVAX + 0.1 fee = 1.6 AVAX needed, 2 AVAX available
     })
 
     expect(result.current.insufficientBalance).toBeNull()

@@ -1,9 +1,8 @@
-import type { FormApi } from '@tanstack/react-form'
 import { useCallback } from 'react'
-import type { TransferFormValues } from '@/schemas/transfer'
+import type { FormType } from './form-types'
 
 interface UseFormResetOptions {
-  form: FormApi<TransferFormValues>
+  form: FormType
   setters: {
     setSelectedAsset: (asset: any) => void
     setSelectedVault: (vault: any) => void

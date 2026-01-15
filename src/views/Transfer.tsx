@@ -1,8 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
-import type { Address } from '@/api/addresses'
-import type { Asset } from '@/api/assets'
-import type { Vault } from '@/api/vaults'
 import {
   AmountSelector,
   AssetSelector,
@@ -14,6 +11,7 @@ import {
   Typography,
   VaultSelector,
 } from '@/components'
+import type { FormType } from '@/hooks/form-types'
 import { useFormReset } from '@/hooks/useFormReset'
 import { useFormStateSync } from '@/hooks/useFormStateSync'
 import { useSelectedAsset } from '@/hooks/useSelectedAsset'
@@ -21,7 +19,8 @@ import { useSelectedToAddress } from '@/hooks/useSelectedToAddress'
 import { useSelectedVault } from '@/hooks/useSelectedVault'
 import { useStepNavigation } from '@/hooks/useStepNavigation'
 import { useTransferFormValidation } from '@/hooks/useTransferFormValidation'
-import { type TransferFormValues, transferFormSchema } from '@/schemas/transfer'
+import type { TransferFormInputValues } from '@/schemas/transfer'
+import { transferFormSchema } from '@/schemas/transfer'
 
 export const Transfer = () => {
   const { selectedAsset, setSelectedAsset } = useSelectedAsset()
@@ -32,12 +31,12 @@ export const Transfer = () => {
 
   const form = useForm({
     defaultValues: {
-      asset: null as Asset | null,
-      vault: null as Vault | null,
-      toAddress: null as Address | null,
+      asset: null,
+      vault: null,
+      toAddress: null,
       amount: '0.00',
       memo: '',
-    } as TransferFormValues,
+    } as TransferFormInputValues,
     onSubmit: async ({ value }) => {
       // Validate using Zod schema
       const result = transferFormSchema.safeParse(value)
@@ -49,7 +48,7 @@ export const Transfer = () => {
 
   // Sync hook-based state with form state
   useFormStateSync({
-    form,
+    form: form as FormType,
     selectedAsset,
     selectedVault,
     selectedAddress,
@@ -63,7 +62,7 @@ export const Transfer = () => {
 
   // Form reset logic
   const { resetForm } = useFormReset({
-    form,
+    form: form as FormType,
     setters: {
       setSelectedAsset,
       setSelectedVault,
@@ -76,7 +75,7 @@ export const Transfer = () => {
   // Form validation logic
   const { assetError, vaultError, toAddressError, amountError, validateForm } =
     useTransferFormValidation({
-      form,
+      form: form as FormType,
       selectedAsset,
       selectedVault,
       selectedAddress,

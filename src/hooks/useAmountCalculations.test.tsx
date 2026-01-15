@@ -8,13 +8,12 @@ import { useAmountCalculations } from './useAmountCalculations'
 
 const mockAsset: Asset = {
   id: 'asset-1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: 'network-1',
-  coinGeckoId: 'vechain',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 const mockVault: Vault = {
@@ -23,13 +22,13 @@ const mockVault: Vault = {
 }
 
 vi.mock('@/api/fee', () => ({
-  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 VET
+  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 AVAX
 }))
 
 vi.mock('@/api/vault-balances', () => ({
   fetchBalancesForVault: vi.fn(() =>
     Promise.resolve([
-      { balance: '1000000000000000000', accountIndex: 0 }, // 1 VET
+      { balance: '1000000000000000000', accountIndex: 0 }, // 1 AVAX
     ]),
   ),
 }))
@@ -121,7 +120,7 @@ describe('useAmountCalculations', () => {
       expect(result.current.maxAmount.bigInt).toBeGreaterThan(BigInt(0))
     })
 
-    // Max should be balance (1 VET) minus fee (0.1 VET) = 0.9 VET
+    // Max should be balance (1 AVAX) minus fee (0.1 AVAX) = 0.9 AVAX
     expect(result.current.maxAmount.formatted).toBe('0.9')
   })
 

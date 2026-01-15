@@ -55,3 +55,15 @@ export const transferFormSchema = z.object({
 })
 
 export type TransferFormValues = z.infer<typeof transferFormSchema>
+
+/**
+ * Form input values type - allows nulls for fields that haven't been selected yet
+ * This matches what the form actually uses internally before validation
+ */
+export type TransferFormInputValues = {
+  asset: Asset | null
+  vault: Vault | null
+  toAddress: Address | null
+  amount: string
+  memo: string
+}

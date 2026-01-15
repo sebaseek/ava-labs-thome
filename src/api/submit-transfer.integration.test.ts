@@ -10,7 +10,7 @@ vi.mock('./utils', async () => {
   return {
     ...actual,
     simulateApiRequest: vi.fn(async (data, options) => {
-      const { successRate = 1.0, minDelay = 10, maxDelay = 50 } = options || {}
+      const { minDelay = 10, maxDelay = 50 } = options || {}
       // Small delay to simulate async
       const delay = Math.random() * (maxDelay - minDelay) + minDelay
       await new Promise((resolve) => setTimeout(resolve, delay))

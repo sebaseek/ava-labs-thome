@@ -5,12 +5,12 @@ import { AmountInput } from './AmountInput'
 
 const mockAsset = {
   id: '1',
-  symbol: 'VET',
-  name: 'VeChain',
+  symbol: 'AVAX',
+  name: 'Avax',
   decimals: 18,
-  logoUri: '/vet.png',
+  logoUri: '/avax.png',
   networkId: '1',
-  price: '0.02',
+  coinGeckoId: 'avalanche-2',
 }
 
 describe('AmountInput', () => {
@@ -44,13 +44,13 @@ describe('AmountInput', () => {
 
   it('shows asset symbol when asset is selected', () => {
     render(<AmountInput value="" onChange={() => {}} selectedAsset={mockAsset} />)
-    expect(screen.getByText('VET')).toBeInTheDocument()
-    expect(screen.getByAltText('VET')).toBeInTheDocument()
+    expect(screen.getByText('AVAX')).toBeInTheDocument()
+    expect(screen.getByAltText('AVAX')).toBeInTheDocument()
   })
 
   it('does not show asset symbol when asset is null', () => {
     render(<AmountInput value="" onChange={() => {}} selectedAsset={null} />)
-    expect(screen.queryByText('VET')).not.toBeInTheDocument()
+    expect(screen.queryByText('AVAX')).not.toBeInTheDocument()
   })
 
   it('applies error styling when hasError is true', () => {

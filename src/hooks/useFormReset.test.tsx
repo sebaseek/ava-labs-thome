@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { TransferFormValues } from '@/schemas/transfer'
 import { useFormReset } from './useFormReset'
 
 const createWrapper = () => {
@@ -34,7 +33,7 @@ describe('useFormReset', () => {
 
     const { result } = renderHook(
       () => {
-        const form = useForm<TransferFormValues>({
+        const form = useForm({
           defaultValues: {
             asset: null,
             vault: null,
@@ -44,7 +43,7 @@ describe('useFormReset', () => {
           },
         })
 
-        return useFormReset({ form, setters: mockSetters })
+        return useFormReset({ form: form as any, setters: mockSetters })
       },
       { wrapper: createWrapper() },
     )
@@ -63,7 +62,7 @@ describe('useFormReset', () => {
 
     const { result } = renderHook(
       () => {
-        const form = useForm<TransferFormValues>({
+        const form = useForm({
           defaultValues: {
             asset: null,
             vault: null,
@@ -77,7 +76,7 @@ describe('useFormReset', () => {
         form.setFieldValue('amount', '200.00')
         form.setFieldValue('memo', 'updated memo')
 
-        return useFormReset({ form, setters: mockSetters })
+        return useFormReset({ form: form as any, setters: mockSetters })
       },
       { wrapper: createWrapper() },
     )
