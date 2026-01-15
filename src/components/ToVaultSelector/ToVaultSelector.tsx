@@ -1,15 +1,15 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { formatUnits } from 'viem'
 import type { Address } from '@/api/addresses'
 import { networkToVaultToAddresses } from '@/api/addresses'
-import type { Asset } from '@/api/assets'
 import { assetToVaultBalances } from '@/api/vault-balances'
 import { fetchVaults } from '@/api/vaults'
-import { SelectableField, SelectableItem } from '@/components/ui'
+import { EmptyState, SelectableField, SelectableItem } from '@/components/ui'
 import { cn } from '@/components/utils'
+import { useSelectedAsset } from '@/hooks/useSelectedAsset'
+import { useSelectedToAddress } from '@/hooks/useSelectedToAddress'
+import { calculateUSDValue } from '@/hooks/useUSDValue'
 import { formatBalance } from '@/utils/balance'
-import { ASSET_PRICES } from '@/utils/prices'
 
 interface AccountWithBalance {
   address: Address
@@ -22,27 +22,10 @@ interface AccountWithBalance {
 }
 
 const ToVaultSelector = () => {
-  const queryClient = useQueryClient()
+  const { selectedAsset } = useSelectedAsset()
+  const { selectedAddress, setSelectedAddress } = useSelectedToAddress()
   const [isOpen, setIsOpen] = useState(false)
   const [selectedVaultFilter, setSelectedVaultFilter] = useState<string | null>(null) // null = "All"
-
-  // Get selected asset to determine which network addresses to show
-  const selectedAsset = useQuery({
-    queryKey: ['selectedAsset'],
-    queryFn: () => null,
-    initialData: null,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  }).data as Asset | null
-
-  // Get selected address from queryClient (reactive)
-  const selectedAddress = useQuery({
-    queryKey: ['selectedToAddress'],
-    queryFn: () => null,
-    initialData: null,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  }).data as Address | null
 
   // Fetch vaults for filter tabs
   const { data: vaults } = useQuery({
@@ -91,9 +74,7 @@ const ToVaultSelector = () => {
         const balance = accountBalance?.balance || '0'
         const balanceBigInt = BigInt(balance)
         const balanceFormatted = formatBalance(balanceBigInt, selectedAsset.decimals)
-        const price = ASSET_PRICES[selectedAsset.coinGeckoId] || 0
-        const unformattedBalance = formatUnits(balanceBigInt, selectedAsset.decimals)
-        const usdValue = Number(unformattedBalance) * price
+        const usdValue = calculateUSDValue(balanceBigInt, selectedAsset)
 
         // Get vault name
         const vault = vaults?.find((v) => v.id === vaultId)
@@ -132,7 +113,7 @@ const ToVaultSelector = () => {
   }, [accountsWithBalances])
 
   const handleAddressSelect = (account: AccountWithBalance) => {
-    queryClient.setQueryData(['selectedToAddress'], account.address)
+    setSelectedAddress(account.address)
     setIsOpen(false)
   }
 
@@ -260,15 +241,15 @@ const ToVaultSelector = () => {
         ))}
 
         {filteredAccounts.length === 0 && (
-          <div className="py-8 text-center">
-            <span className="text-base font-medium text-blue-5">
-              {!selectedAsset
+          <EmptyState
+            message={
+              !selectedAsset
                 ? 'Please select an asset first'
                 : accountsWithBalances.length === 0
                   ? 'No accounts found for this asset'
-                  : 'No accounts found for selected vault'}
-            </span>
-          </div>
+                  : 'No accounts found for selected vault'
+            }
+          />
         )}
       </div>
     </SelectableField>

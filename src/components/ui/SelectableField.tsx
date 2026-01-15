@@ -1,6 +1,7 @@
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '../utils'
+import { Card } from './Card'
 import { Text } from './Text'
 
 export type SelectableFieldProps = {
@@ -39,16 +40,14 @@ const SelectableField = ({
   const canInteract = !isLoading && !error
 
   return (
-    <div
+    <Card
       className={cn(
-        'w-full rounded-[12px] border border-card-border',
-        'bg-white-transparency-40 backdrop-blur-[40px]',
-        'overflow-hidden transition-all duration-200',
         // Hover state - only when closed and can interact
         !isOpen && canInteract && 'hover:bg-white',
         // Shadow only when focused
         'focus-within:shadow-[0px_4px_20px_0px_rgba(104,129,153,0.3)]',
       )}
+      hover={false}
     >
       {/* Button */}
       <button
@@ -105,7 +104,7 @@ const SelectableField = ({
       {isOpen && showExpandedContent && children && (
         <div className="ml-[200px] px-[25px] pb-6 pt-4">{children}</div>
       )}
-    </div>
+    </Card>
   )
 }
 

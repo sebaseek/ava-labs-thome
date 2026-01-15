@@ -1,0 +1,53 @@
+import type { Asset } from '@/api/assets'
+import { cn } from '@/components/utils'
+
+export interface AmountInputProps {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  hasError?: boolean
+  hasValue?: boolean
+  selectedAsset: Asset | null
+}
+
+/**
+ * AmountInput component - handles amount input with asset symbol display
+ */
+export const AmountInput = ({
+  value,
+  onChange,
+  placeholder = '0.00',
+  hasError = false,
+  hasValue = false,
+  selectedAsset,
+}: AmountInputProps) => {
+  return (
+    <div className="relative min-w-0 flex-1">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={cn(
+          'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-20 py-1',
+          'font-sans text-base font-medium leading-[120%]',
+          'transition-colors duration-200 outline-none',
+          hasError
+            ? 'border-red-highlight-2 focus:border-red-highlight-2 focus:ring-2 focus:ring-red-highlight-2-transparency-40'
+            : 'border-blue-5-transparency-30 focus:border-blue-5 focus:ring-2 focus:ring-blue-5/20',
+          hasValue ? 'text-blue-1' : 'text-blue-5 placeholder:text-blue-5/70',
+        )}
+      />
+      {selectedAsset && (
+        <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+          <img
+            src={selectedAsset.logoUri}
+            alt={selectedAsset.symbol}
+            className="h-[18px] w-[18px]"
+          />
+          <span className="text-sm font-medium text-blue-1">{selectedAsset.symbol}</span>
+        </div>
+      )}
+    </div>
+  )
+}
