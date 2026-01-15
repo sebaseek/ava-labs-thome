@@ -36,18 +36,20 @@ export const AmountSelector = ({
     })
 
   // Get amount input state and handlers with actual fee and balance
-  const { displayAmount, hasValue, insufficientBalance, handleAmountChange } = useAmountInput({
-    selectedAsset,
-    fee: fee,
-    availableBalance: availableBalance.balance,
-    amount,
-    setAmount,
-  })
+  const { displayAmount, hasValue, insufficientBalance, totalNeeded, handleAmountChange } =
+    useAmountInput({
+      selectedAsset,
+      fee: fee,
+      availableBalance: availableBalance.balance,
+      amount,
+      setAmount,
+    })
 
   // Get balance display logic
   const { hasInputError, displayText } = useBalanceDisplay({
     balanceError,
     insufficientBalance,
+    totalNeeded,
     availableBalance,
     selectedAsset,
   })

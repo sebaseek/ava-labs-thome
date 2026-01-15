@@ -43,6 +43,7 @@ describe('useBalanceDisplay', () => {
       useBalanceDisplay({
         balanceError: null,
         insufficientBalance: '0.5',
+        totalNeeded: '1.5',
         availableBalance: {
           balance: BigInt(500000000000000000),
           usdValue: 10,
@@ -53,8 +54,9 @@ describe('useBalanceDisplay', () => {
     )
 
     expect(result.current.hasInputError).toBe(true)
-    expect(result.current.displayText).toContain('Insufficient balance for fee')
-    expect(result.current.displayText).toContain('0.5')
+    expect(result.current.displayText).toContain('Insufficient balance')
+    expect(result.current.displayText).toContain('Total needed:')
+    expect(result.current.displayText).toContain('1.5')
     expect(result.current.displayText).toContain('AVAX')
   })
 

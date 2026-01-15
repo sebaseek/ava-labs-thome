@@ -17,6 +17,7 @@ interface UseAmountInputReturn {
   displayAmount: string
   hasValue: boolean
   insufficientBalance: string | null
+  totalNeeded: string | null
   handleAmountChange: (value: string) => void
 }
 
@@ -81,26 +82,29 @@ export const useAmountInput = ({
     return formatted
   }, [amount])
 
-  const insufficientBalance = useMemo(() => {
+  const { insufficientBalance, totalNeeded } = useMemo(() => {
     if (!selectedAsset || !fee || !hasValue || availableBalance === BigInt(0)) {
-      return null
+      return { insufficientBalance: null, totalNeeded: null }
     }
 
     try {
       const amountWithoutCommas = amount.replace(/,/g, '')
       const amountBigInt = parseUnits(amountWithoutCommas, selectedAsset.decimals)
       const feeBigInt = BigInt(fee)
-      const totalNeeded = amountBigInt + feeBigInt
+      const totalNeededBigInt = amountBigInt + feeBigInt
 
-      if (totalNeeded > availableBalance) {
-        const missing = totalNeeded - availableBalance
-        return formatBalance(missing, selectedAsset.decimals)
+      if (totalNeededBigInt > availableBalance) {
+        const missing = totalNeededBigInt - availableBalance
+        return {
+          insufficientBalance: formatBalance(missing, selectedAsset.decimals),
+          totalNeeded: formatBalance(totalNeededBigInt, selectedAsset.decimals),
+        }
       }
     } catch {
       // Invalid input - don't show error
     }
 
-    return null
+    return { insufficientBalance: null, totalNeeded: null }
   }, [amount, hasValue, selectedAsset, fee, availableBalance])
 
   return {
@@ -109,6 +113,7 @@ export const useAmountInput = ({
     displayAmount,
     hasValue,
     insufficientBalance,
+    totalNeeded,
     handleAmountChange,
   }
 }

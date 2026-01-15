@@ -89,7 +89,7 @@ export const useAmountCalculations = ({
 
     const feeBigInt = fee ? BigInt(fee) : BigInt(0)
     const balance = availableBalance.balance || BigInt(0)
-    
+
     // If fees exceed or equal balance, set max to full balance (user will see error, which is expected)
     // Otherwise, set max to balance - fee (normal case)
     const max = balance > feeBigInt ? balance - feeBigInt : balance

@@ -4,6 +4,7 @@ import type { Asset } from '@/api/assets'
 interface UseBalanceDisplayOptions {
   balanceError: Error | null
   insufficientBalance: string | null
+  totalNeeded: string | null
   availableBalance: {
     balance: bigint
     usdValue: number
@@ -25,6 +26,7 @@ interface UseBalanceDisplayReturn {
 export const useBalanceDisplay = ({
   balanceError,
   insufficientBalance,
+  totalNeeded,
   availableBalance,
   selectedAsset,
 }: UseBalanceDisplayOptions): UseBalanceDisplayReturn => {
@@ -36,8 +38,8 @@ export const useBalanceDisplay = ({
       return 'Unable to load usable balance'
     }
 
-    if (insufficientBalance && selectedAsset) {
-      return `Insufficient balance for fee. Missing ${insufficientBalance} ${selectedAsset.symbol}`
+    if (insufficientBalance && totalNeeded && selectedAsset) {
+      return `Insufficient balance. Total needed: ${totalNeeded} ${selectedAsset.symbol}`
     }
 
     if (!selectedAsset || !availableBalance.formatted || availableBalance.formatted === '0') {
@@ -51,7 +53,7 @@ export const useBalanceDisplay = ({
     const tokenAmount = `${availableBalance.formatted} ${selectedAsset.symbol}`
 
     return `$ ${usdValue} ≈ ${tokenAmount}`
-  }, [availableBalance, selectedAsset, hasBalanceError, insufficientBalance])
+  }, [availableBalance, selectedAsset, hasBalanceError, insufficientBalance, totalNeeded])
 
   return {
     hasBalanceError,
