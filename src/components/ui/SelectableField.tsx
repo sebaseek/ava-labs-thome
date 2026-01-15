@@ -64,7 +64,7 @@ const SelectableField = ({
       >
         {/* Left: Label + Content */}
         <div className="flex items-center gap-[80px]">
-          <span className="w-[120px] shrink-0 text-base font-semibold leading-[19px] text-blue-1">
+          <span className="w-[120px] shrink-0 text-left text-base font-semibold leading-[19px] text-blue-1">
             {label}
           </span>
 

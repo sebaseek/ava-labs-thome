@@ -1,24 +1,26 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { formatUnits } from 'viem'
 import { type Asset, fetchAssets } from '@/api/assets'
 import { fetchNetworks } from '@/api/networks'
 import { assetToVaultBalances } from '@/api/vault-balances'
 import { Input, SelectableField, SelectableItem } from '@/components/ui'
 import { calculateTotalBalance, formatBalance } from '@/utils/balance'
-
-// Asset prices in USD (mocked data from vault-balances comments)
-const ASSET_PRICES: Record<string, number> = {
-  'avalanche-2': 25.46,
-  'usd-coin': 1.0,
-  ethereum: 4311.56,
-  bitcoin: 112213.21,
-}
+import { ASSET_PRICES } from '@/utils/prices'
 
 const AssetSelector = () => {
+  const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  const selectedAsset = useQuery({
+    queryKey: ['selectedAsset'],
+    queryFn: () => null,
+    initialData: null,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  }).data as Asset | null
 
   const {
     data: assets,
@@ -68,7 +70,8 @@ const AssetSelector = () => {
         const totalBalance = calculateTotalBalance(vaultData)
         const balance = formatBalance(totalBalance, asset.decimals)
         const price = ASSET_PRICES[asset.coinGeckoId] || 0
-        const usdValue = parseFloat(balance) * price
+        const unformattedBalance = formatUnits(totalBalance, asset.decimals)
+        const usdValue = Number(unformattedBalance) * price
 
         return { asset, balance, usdValue }
       }),
@@ -76,7 +79,7 @@ const AssetSelector = () => {
   )
 
   const handleAssetSelect = (asset: Asset) => {
-    setSelectedAsset(asset)
+    queryClient.setQueryData(['selectedAsset'], asset)
     setIsOpen(false)
     setSearchQuery('')
   }

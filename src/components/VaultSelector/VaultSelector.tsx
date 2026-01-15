@@ -1,13 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { fetchVaults, type Vault } from '@/api/vaults'
 import { Input, SelectableField, SelectableItem } from '@/components/ui'
 
 const VaultSelector = () => {
+  const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedVault, setSelectedVault] = useState<Vault | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Get selected vault from queryClient (reactive)
+  const selectedVault = useQuery({
+    queryKey: ['selectedVault'],
+    queryFn: () => null,
+    initialData: null,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  }).data as Vault | null
 
   const {
     data: vaults,
@@ -24,7 +33,7 @@ const VaultSelector = () => {
   )
 
   const handleVaultSelect = (vault: Vault) => {
-    setSelectedVault(vault)
+    queryClient.setQueryData(['selectedVault'], vault)
     setIsOpen(false)
     setSearchQuery('')
   }
