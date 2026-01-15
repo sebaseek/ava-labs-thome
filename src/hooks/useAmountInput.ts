@@ -7,6 +7,8 @@ interface UseAmountInputOptions {
   selectedAsset: Asset | null
   fee: string | null
   availableBalance: bigint
+  amount?: string
+  setAmount?: (value: string) => void
 }
 
 interface UseAmountInputReturn {
@@ -49,8 +51,12 @@ export const useAmountInput = ({
   selectedAsset,
   fee,
   availableBalance,
+  amount: externalAmount,
+  setAmount: externalSetAmount,
 }: UseAmountInputOptions): UseAmountInputReturn => {
-  const [amount, setAmount] = useState('0.00')
+  const [internalAmount, setInternalAmount] = useState('0.00')
+  const amount = externalAmount ?? internalAmount
+  const setAmount = externalSetAmount ?? setInternalAmount
 
   const handleAmountChange = (value: string) => {
     const cleaned = cleanAmountInput(value)

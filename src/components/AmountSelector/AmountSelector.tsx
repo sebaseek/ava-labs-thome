@@ -16,9 +16,11 @@ import { MaxButton } from './MaxButton'
 
 interface AmountSelectorProps {
   onFieldClick?: () => void
+  amount?: string
+  setAmount?: (value: string) => void
 }
 
-export const AmountSelector = ({ onFieldClick }: AmountSelectorProps = {}) => {
+export const AmountSelector = ({ onFieldClick, amount, setAmount }: AmountSelectorProps = {}) => {
   const { selectedAsset } = useSelectedAsset()
   const { selectedVault } = useSelectedVault()
 
@@ -53,12 +55,20 @@ export const AmountSelector = ({ onFieldClick }: AmountSelectorProps = {}) => {
     return { balance: totalBalance, usdValue, formatted }
   }, [selectedAsset, selectedVault, vaultBalances])
 
-  const { amount, setAmount, displayAmount, hasValue, insufficientBalance, handleAmountChange } =
-    useAmountInput({
-      selectedAsset,
-      fee: fee ?? null,
-      availableBalance: availableBalance.balance,
-    })
+  const {
+    amount: currentAmount,
+    setAmount: currentSetAmount,
+    displayAmount,
+    hasValue,
+    insufficientBalance,
+    handleAmountChange,
+  } = useAmountInput({
+    selectedAsset,
+    fee: fee ?? null,
+    availableBalance: availableBalance.balance,
+    amount,
+    setAmount,
+  })
 
   const formattedFee = useMemo(() => {
     if (!fee || !selectedAsset) return ''
@@ -83,29 +93,35 @@ export const AmountSelector = ({ onFieldClick }: AmountSelectorProps = {}) => {
 
   // Check if current amount equals max amount
   const isMaxAmount = useMemo(() => {
-    if (!selectedAsset || !amount || amount === '0' || amount === '0.00' || !maxAmount.formatted) {
+    if (
+      !selectedAsset ||
+      !currentAmount ||
+      currentAmount === '0' ||
+      currentAmount === '0.00' ||
+      !maxAmount.formatted
+    ) {
       return false
     }
 
     try {
-      const amountWithoutCommas = amount.replace(/,/g, '')
+      const amountWithoutCommas = currentAmount.replace(/,/g, '')
       const currentAmountBigInt = parseUnits(amountWithoutCommas, selectedAsset.decimals)
       return currentAmountBigInt === maxAmount.bigInt
     } catch {
       return false
     }
-  }, [amount, maxAmount, selectedAsset])
+  }, [currentAmount, maxAmount, selectedAsset])
 
   // Reset when asset changes
   useEffect(() => {
     if (selectedAsset) {
-      setAmount('0.00')
+      currentSetAmount('0.00')
     }
-  }, [selectedAsset, setAmount])
+  }, [selectedAsset, currentSetAmount])
 
   const handleMaxClick = () => {
     if (!selectedAsset || !availableBalance.balance) return
-    setAmount(maxAmount.formatted)
+    currentSetAmount(maxAmount.formatted)
   }
 
   const hasBalanceError = !!balanceError
