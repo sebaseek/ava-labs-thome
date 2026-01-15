@@ -14,6 +14,7 @@ A transaction request interface for institutional custody, demonstrating product
 - **BigInt Utilities**: Viem
 - **Code Quality**: Biome (linting & formatting)
 - **Testing**: Vitest + Testing Library
+- **E2E Testing**: Playwright
 
 ## 📦 Getting Started
 
@@ -37,8 +38,11 @@ pnpm build
 # Preview production build
 pnpm preview
 
-# Run tests
+# Run unit tests
 pnpm test
+
+# Run E2E tests
+pnpm test:e2e
 
 # Lint code
 pnpm lint
