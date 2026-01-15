@@ -55,7 +55,7 @@ export const useAmountInput = ({
   setAmount: externalSetAmount,
 }: UseAmountInputOptions): UseAmountInputReturn => {
   const [internalAmount, setInternalAmount] = useState('0.00')
-  const amount = externalAmount ?? internalAmount
+  const amount = externalAmount !== undefined ? externalAmount : internalAmount
   const setAmount = externalSetAmount ?? setInternalAmount
 
   const handleAmountChange = (value: string) => {

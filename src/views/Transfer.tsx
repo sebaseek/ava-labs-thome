@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AmountSelector,
   AssetSelector,
@@ -23,6 +23,12 @@ export const Transfer = () => {
   const [amount, setAmount] = useState('0.00')
   const [activeStep, setActiveStep] = useState<StepIndex | null>(null)
   const [transferCompleted, setTransferCompleted] = useState(false)
+  const [validationErrors, setValidationErrors] = useState({
+    asset: false,
+    vault: false,
+    toAddress: false,
+    amount: false,
+  })
 
   // Check if a step is disabled
   const isStepDisabled = (step: StepIndex): boolean => {
@@ -47,16 +53,42 @@ export const Transfer = () => {
     setAmount('0.00')
     setActiveStep(null)
     setTransferCompleted(false)
+    setValidationErrors({
+      asset: false,
+      vault: false,
+      toAddress: false,
+      amount: false,
+    })
   }
 
   const handleSubmitTransfer = () => {
     // Validate all required fields (memo is optional)
     const hasAmount = amount && amount !== '0.00' && amount !== '0' && amount !== ''
 
+    // Set validation errors for missing fields
+    const errors = {
+      asset: !selectedAsset,
+      vault: !selectedVault,
+      toAddress: !selectedAddress,
+      amount: !hasAmount,
+    }
+    setValidationErrors(errors)
+
+    // Only proceed if all fields are valid
     if (selectedAsset && selectedVault && selectedAddress && hasAmount) {
       setTransferCompleted(true)
     }
   }
+
+  // Clear validation errors when fields are filled
+  useEffect(() => {
+    setValidationErrors((prev) => ({
+      ...prev,
+      asset: prev.asset && selectedAsset ? false : prev.asset,
+      vault: prev.vault && selectedVault ? false : prev.vault,
+      toAddress: prev.toAddress && selectedAddress ? false : prev.toAddress,
+    }))
+  }, [selectedAsset, selectedVault, selectedAddress])
 
   const handleNewRequest = () => {
     handleStartOver()
@@ -99,16 +131,33 @@ export const Transfer = () => {
               {/* Right Column - Form Fields */}
               <div className="space-y-4">
                 {/* Asset Selector */}
-                <AssetSelector onFieldClick={() => handleStepClick(0)} />
+                <AssetSelector
+                  onFieldClick={() => handleStepClick(0)}
+                  hasError={validationErrors.asset}
+                />
                 {/* Vault Selector */}
-                <VaultSelector onFieldClick={() => handleStepClick(1)} />
+                <VaultSelector
+                  onFieldClick={() => handleStepClick(1)}
+                  hasError={validationErrors.vault}
+                />
                 {/* To Vault Selector */}
-                <ToVaultSelector onFieldClick={() => handleStepClick(2)} />
+                <ToVaultSelector
+                  onFieldClick={() => handleStepClick(2)}
+                  hasError={validationErrors.toAddress}
+                />
                 {/* Amount Selector */}
                 <AmountSelector
                   amount={amount}
-                  setAmount={setAmount}
+                  setAmount={(value) => {
+                    setAmount(value)
+                    // Clear validation error when amount is set
+                    const hasAmount = value && value !== '0.00' && value !== '0' && value !== ''
+                    if (hasAmount && validationErrors.amount) {
+                      setValidationErrors((prev) => ({ ...prev, amount: false }))
+                    }
+                  }}
                   onFieldClick={() => handleStepClick(3)}
+                  hasError={validationErrors.amount}
                 />
                 {/* Memo */}
                 <Memo value={memo} onChange={setMemo} onFieldClick={() => handleStepClick(4)} />

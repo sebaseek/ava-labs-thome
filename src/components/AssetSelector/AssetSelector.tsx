@@ -10,9 +10,10 @@ import { calculateTotalBalance, formatBalance } from '@/utils/balance'
 
 interface AssetSelectorProps {
   onFieldClick?: () => void
+  hasError?: boolean
 }
 
-const AssetSelector = ({ onFieldClick }: AssetSelectorProps = {}) => {
+const AssetSelector = ({ onFieldClick, hasError = false }: AssetSelectorProps = {}) => {
   const { selectedAsset, setSelectedAsset } = useSelectedAsset()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -106,6 +107,7 @@ const AssetSelector = ({ onFieldClick }: AssetSelectorProps = {}) => {
       loadingMessage="Fetching assets..."
       errorMessage="An error occurred while loading assets."
       showExpandedContent={!!assets}
+      hasError={hasError}
     >
       <SearchableList
         searchQuery={searchQuery}

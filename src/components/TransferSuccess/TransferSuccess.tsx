@@ -29,14 +29,14 @@ export const TransferSuccess = ({ onViewTransaction, onNewRequest }: TransferSuc
         <button
           type="button"
           onClick={onViewTransaction}
-          className="h-[45px] rounded-[9px] bg-blue-5-transparency-30 px-[20px] font-sans text-[16px] font-semibold text-blue-2 transition-colors"
+          className="rounded-[9px] border-0 bg-blue-5-transparency-30 px-[20px] py-[12px] font-sans text-[16px] font-semibold leading-[16px] text-blue-2 backdrop-blur-[15px] transition-colors hover:bg-blue-5-transparency-15 hover:text-blue-4"
         >
           View Transaction
         </button>
         <button
           type="button"
           onClick={onNewRequest}
-          className="h-[45px] rounded-[9px] bg-gold-highlight-3 px-[20px] font-sans text-[16px] font-semibold text-gold-highlight-dark transition-colors"
+          className="rounded-[9px] border-0 bg-gold-highlight-3 px-[20px] py-[12px] font-sans text-[16px] font-semibold leading-[16px] text-gold-highlight-dark backdrop-blur-[15px] transition-colors hover:bg-gold-highlight-4"
         >
           New Request
         </button>

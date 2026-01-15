@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Address } from '@/api/addresses'
 import { networkToVaultToAddresses } from '@/api/addresses'
 import { assetToVaultBalances } from '@/api/vault-balances'
@@ -23,9 +23,10 @@ interface AccountWithBalance {
 
 interface ToVaultSelectorProps {
   onFieldClick?: () => void
+  hasError?: boolean
 }
 
-const ToVaultSelector = ({ onFieldClick }: ToVaultSelectorProps = {}) => {
+const ToVaultSelector = ({ onFieldClick, hasError = false }: ToVaultSelectorProps = {}) => {
   const { selectedAsset } = useSelectedAsset()
   const { selectedAddress, setSelectedAddress } = useSelectedToAddress()
   const [isOpen, setIsOpen] = useState(false)
@@ -121,6 +122,18 @@ const ToVaultSelector = ({ onFieldClick }: ToVaultSelectorProps = {}) => {
     setIsOpen(false)
   }
 
+  // Clear selected address if it's no longer valid for the current asset
+  useEffect(() => {
+    if (selectedAddress && selectedAsset) {
+      const isValid = accountsWithBalances.some(
+        (acc) => acc.address.address === selectedAddress.address,
+      )
+      if (!isValid) {
+        setSelectedAddress(null)
+      }
+    }
+  }, [selectedAsset, accountsWithBalances, selectedAddress, setSelectedAddress])
+
   // Find the selected account to show account name
   const selectedAccount = useMemo(() => {
     if (!selectedAddress) return null
@@ -159,6 +172,7 @@ const ToVaultSelector = ({ onFieldClick }: ToVaultSelectorProps = {}) => {
       loadingMessage="Fetching addresses..."
       errorMessage="An error occurred while loading addresses."
       showExpandedContent={showExpandedContent}
+      hasError={hasError}
     >
       {/* Vault Filter Tabs */}
       {selectedAsset && accountsWithBalances.length > 0 && (

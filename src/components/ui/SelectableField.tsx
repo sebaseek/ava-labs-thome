@@ -16,6 +16,7 @@ export type SelectableFieldProps = {
   errorMessage?: string
   children?: ReactNode
   showExpandedContent?: boolean
+  hasError?: boolean
 }
 
 const getErrorMessage = (error: boolean | Error | null, defaultMessage: string): string => {
@@ -36,6 +37,7 @@ const SelectableField = ({
   errorMessage = 'An error occurred',
   children,
   showExpandedContent = true,
+  hasError = false,
 }: SelectableFieldProps) => {
   const canInteract = !isLoading && !error
 
@@ -48,6 +50,7 @@ const SelectableField = ({
         'focus-within:shadow-[0px_4px_20px_0px_rgba(104,129,153,0.3)]',
       )}
       hover={false}
+      hasError={hasError}
     >
       {/* Button */}
       <button

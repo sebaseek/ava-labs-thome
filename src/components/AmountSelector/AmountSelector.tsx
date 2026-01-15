@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { parseUnits } from 'viem'
 import { fetchFee } from '@/api/fee'
 import { fetchBalancesForVault } from '@/api/vault-balances'
@@ -18,9 +18,15 @@ interface AmountSelectorProps {
   onFieldClick?: () => void
   amount?: string
   setAmount?: (value: string) => void
+  hasError?: boolean
 }
 
-export const AmountSelector = ({ onFieldClick, amount, setAmount }: AmountSelectorProps = {}) => {
+export const AmountSelector = ({
+  onFieldClick,
+  amount,
+  setAmount,
+  hasError = false,
+}: AmountSelectorProps = {}) => {
   const { selectedAsset } = useSelectedAsset()
   const { selectedVault } = useSelectedVault()
 
@@ -112,20 +118,32 @@ export const AmountSelector = ({ onFieldClick, amount, setAmount }: AmountSelect
     }
   }, [currentAmount, maxAmount, selectedAsset])
 
-  // Reset when asset changes
+  // Reset amount when asset changes
+  const prevAssetIdRef = useRef<string | null>(null)
   useEffect(() => {
-    if (selectedAsset) {
-      currentSetAmount('0.00')
+    const currentAssetId = selectedAsset?.id
+    if (
+      currentAssetId &&
+      prevAssetIdRef.current !== null &&
+      prevAssetIdRef.current !== currentAssetId
+    ) {
+      if (setAmount) {
+        setAmount('0.00')
+      } else {
+        currentSetAmount('0.00')
+      }
     }
-  }, [selectedAsset, currentSetAmount])
+    prevAssetIdRef.current = currentAssetId ?? null
+  }, [selectedAsset?.id, setAmount, currentSetAmount])
 
   const handleMaxClick = () => {
     if (!selectedAsset || !availableBalance.balance) return
-    currentSetAmount(maxAmount.formatted)
+    // handleAmountChange will clean the formatted value (remove commas) before setting
+    handleAmountChange(maxAmount.formatted)
   }
 
   const hasBalanceError = !!balanceError
-  const hasError = hasBalanceError || !!insufficientBalance
+  const hasInputError = hasBalanceError || !!insufficientBalance
 
   const availableBalanceDisplay = useMemo(() => {
     if (hasBalanceError) {
@@ -159,7 +177,7 @@ export const AmountSelector = ({ onFieldClick, amount, setAmount }: AmountSelect
               onChange={handleAmountChange}
               onFocus={onFieldClick}
               placeholder="0.00"
-              hasError={hasError}
+              hasError={hasError || hasInputError}
               hasValue={hasValue}
               selectedAsset={selectedAsset}
             />
@@ -168,7 +186,10 @@ export const AmountSelector = ({ onFieldClick, amount, setAmount }: AmountSelect
         </FormField>
 
         <div className="px-[25px] py-[15px]">
-          <BalanceDisplay availableBalanceDisplay={availableBalanceDisplay} hasError={hasError} />
+          <BalanceDisplay
+            availableBalanceDisplay={availableBalanceDisplay}
+            hasError={hasInputError}
+          />
 
           <div className="my-2 h-[1px] w-full bg-blue-5-transparency-30" />
 

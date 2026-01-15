@@ -6,9 +6,10 @@ import { useSelectedVault } from '@/hooks/useSelectedVault'
 
 interface VaultSelectorProps {
   onFieldClick?: () => void
+  hasError?: boolean
 }
 
-const VaultSelector = ({ onFieldClick }: VaultSelectorProps = {}) => {
+const VaultSelector = ({ onFieldClick, hasError = false }: VaultSelectorProps = {}) => {
   const { selectedVault, setSelectedVault } = useSelectedVault()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -54,6 +55,7 @@ const VaultSelector = ({ onFieldClick }: VaultSelectorProps = {}) => {
       loadingMessage="Fetching vaults..."
       errorMessage="An error occurred while loading vaults."
       showExpandedContent={!!vaults}
+      hasError={hasError}
     >
       <SearchableList
         searchQuery={searchQuery}
