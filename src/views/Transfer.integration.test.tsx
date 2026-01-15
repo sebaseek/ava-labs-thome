@@ -249,10 +249,13 @@ describe('Transfer Integration Tests', () => {
       await user.click(submitButton)
 
       // Verify success screen appears - check for buttons (more reliable)
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /New Request/i })).toBeInTheDocument()
-      }, { timeout: 3000 })
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
+          expect(screen.getByRole('button', { name: /New Request/i })).toBeInTheDocument()
+        },
+        { timeout: 3000 },
+      )
 
       // Verify success actions are available
       expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
@@ -289,10 +292,11 @@ describe('Transfer Integration Tests', () => {
       })
       // Find Vault 1 in the list (not the selected one if already selected)
       const vault1Options = screen.getAllByText('Vault 1')
-      const vault1Option = vault1Options.find((el) => {
-        const parent = el.closest('button')
-        return parent && parent.getAttribute('type') === 'button'
-      }) || vault1Options[0]
+      const vault1Option =
+        vault1Options.find((el) => {
+          const parent = el.closest('button')
+          return parent && parent.getAttribute('type') === 'button'
+        }) || vault1Options[0]
       if (vault1Option) {
         const clickableParent = vault1Option.closest('button')
         if (clickableParent) {
@@ -386,10 +390,13 @@ describe('Transfer Integration Tests', () => {
       await user.click(submitButton)
 
       // Wait for success screen - check for buttons instead of text (more reliable)
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /New Request/i })).toBeInTheDocument()
-      }, { timeout: 3000 })
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
+          expect(screen.getByRole('button', { name: /New Request/i })).toBeInTheDocument()
+        },
+        { timeout: 3000 },
+      )
 
       // Click New Request
       const newRequestButton = screen.getByRole('button', { name: /New Request/i })
@@ -420,10 +427,11 @@ describe('Transfer Integration Tests', () => {
       })
       // Find Vault 1 in the list (not the selected one if already selected)
       const vault1Options = screen.getAllByText('Vault 1')
-      const vault1Option = vault1Options.find((el) => {
-        const parent = el.closest('button')
-        return parent && parent.getAttribute('type') === 'button'
-      }) || vault1Options[0]
+      const vault1Option =
+        vault1Options.find((el) => {
+          const parent = el.closest('button')
+          return parent && parent.getAttribute('type') === 'button'
+        }) || vault1Options[0]
       if (vault1Option) {
         const clickableParent = vault1Option.closest('button')
         if (clickableParent) {
@@ -466,10 +474,11 @@ describe('Transfer Integration Tests', () => {
       })
       // Find Vault 1 in the list (not the selected one if already selected)
       const vault1Options = screen.getAllByText('Vault 1')
-      const vault1Option = vault1Options.find((el) => {
-        const parent = el.closest('button')
-        return parent && parent.getAttribute('type') === 'button'
-      }) || vault1Options[0]
+      const vault1Option =
+        vault1Options.find((el) => {
+          const parent = el.closest('button')
+          return parent && parent.getAttribute('type') === 'button'
+        }) || vault1Options[0]
       if (vault1Option) {
         const clickableParent = vault1Option.closest('button')
         if (clickableParent) {
@@ -640,9 +649,10 @@ describe('Transfer Integration Tests', () => {
       // Find the tab that's in the same container as the "All" button
       const allButton = screen.getByRole('button', { name: /All/i })
       const filterContainer = allButton.closest('div')
-      const filterTab = vault1Tabs.find((btn) => {
-        return filterContainer?.contains(btn)
-      }) || vault1Tabs[0]
+      const filterTab =
+        vault1Tabs.find((btn) => {
+          return filterContainer?.contains(btn)
+        }) || vault1Tabs[0]
       await user.click(filterTab)
 
       // Should show accounts filtered to Vault 1
@@ -663,11 +673,15 @@ describe('Transfer Integration Tests', () => {
       await user.click(screen.getByText('Asset'))
 
       // Should show error message (check for error indicator or message)
-      await waitFor(() => {
-        // Check for error icon or error message text
-        const errorMessage = screen.queryByText(/error/i) || screen.queryByText(/An error occurred/i)
-        expect(errorMessage || screen.queryByRole('img', { name: /alert/i })).toBeTruthy()
-      }, { timeout: 3000 })
+      await waitFor(
+        () => {
+          // Check for error icon or error message text
+          const errorMessage =
+            screen.queryByText(/error/i) || screen.queryByText(/An error occurred/i)
+          expect(errorMessage || screen.queryByRole('img', { name: /alert/i })).toBeTruthy()
+        },
+        { timeout: 3000 },
+      )
     })
 
     it('should show validation errors on form fields after submit attempt', async () => {
@@ -736,11 +750,14 @@ describe('Transfer Integration Tests', () => {
 
       // Amount should be reset when asset changes
       // Wait a bit for the reset to happen
-      await waitFor(() => {
-        const value = amountInput.getAttribute('value') || (amountInput as HTMLInputElement).value
-        // Value should be empty or '0.00'
-        expect(value === '' || value === '0.00' || value === '0').toBe(true)
-      }, { timeout: 2000 })
+      await waitFor(
+        () => {
+          const value = amountInput.getAttribute('value') || (amountInput as HTMLInputElement).value
+          // Value should be empty or '0.00'
+          expect(value === '' || value === '0.00' || value === '0').toBe(true)
+        },
+        { timeout: 2000 },
+      )
     })
 
     it('should clear destination address when asset changes', async () => {
@@ -763,12 +780,15 @@ describe('Transfer Integration Tests', () => {
 
       // Destination should be cleared when asset changes
       // Wait a bit for the state to update
-      await waitFor(() => {
-        // Check if destination field shows placeholder (address was cleared)
-        const toFieldText = screen.queryByText('Select destination')
-        // The address should be cleared, so we should see the placeholder
-        expect(toFieldText || screen.queryByText(/Account 0/i)).toBeTruthy()
-      }, { timeout: 2000 })
+      await waitFor(
+        () => {
+          // Check if destination field shows placeholder (address was cleared)
+          const toFieldText = screen.queryByText('Select destination')
+          // The address should be cleared, so we should see the placeholder
+          expect(toFieldText || screen.queryByText(/Account 0/i)).toBeTruthy()
+        },
+        { timeout: 2000 },
+      )
     })
   })
 })
