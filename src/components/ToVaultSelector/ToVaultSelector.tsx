@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import type { Address } from '@/api/addresses'
-import { networkToVaultToAddresses } from '@/api/addresses'
+import { fetchAddressesForVault } from '@/api/addresses'
 import type { Asset } from '@/api/assets'
 import { assetToVaultBalances } from '@/api/vault-balances'
 import { fetchVaults } from '@/api/vaults'
@@ -41,19 +41,57 @@ const ToVaultSelector = ({
   const [selectedVaultFilter, setSelectedVaultFilter] = useState<string | null>(null) // null = "All"
 
   // Fetch vaults for filter tabs
-  const { data: vaults } = useQuery({
+  const {
+    data: vaults,
+    isLoading: isLoadingVaults,
+    error: vaultError,
+  } = useQuery({
     queryKey: ['vaults'],
     queryFn: fetchVaults,
   })
 
-  // Get all addresses for the selected network, grouped by vault
-  const accountsWithBalances = useMemo(() => {
-    if (!selectedAsset) {
+  // Fetch addresses for all vaults in the selected network
+  const addressQueries = useQueries({
+    queries:
+      selectedAsset && vaults && vaults.length > 0
+        ? vaults.map((vault) => ({
+            queryKey: ['addresses', selectedAsset.networkId, vault.id],
+            queryFn: () => fetchAddressesForVault(selectedAsset.networkId, vault.id),
+            enabled: !!selectedAsset && !!vaults && vaults.length > 0,
+            retry: 1,
+          }))
+        : [],
+  })
+
+  // Check if any query is loading or has error
+  const isLoadingAddresses = addressQueries.some((query) => query.isLoading)
+  const addressError = addressQueries.find((query) => query.error)?.error || null
+
+  // Show loading if vaults are loading OR addresses are loading
+  const isLoading = isLoadingVaults || (!!selectedAsset && isLoadingAddresses)
+  // Show error if vaults have error OR addresses have error
+  const error = vaultError || addressError
+
+  // Combine all addresses from all vaults
+  const allAddresses = useMemo(() => {
+    if (!selectedAsset || !vaults) {
       return []
     }
 
-    const network = networkToVaultToAddresses[selectedAsset.networkId]
-    if (!network) {
+    const addressesByVault: Record<string, Address[]> = {}
+
+    addressQueries.forEach((query, index) => {
+      if (query.data && vaults[index]) {
+        addressesByVault[vaults[index].id] = query.data
+      }
+    })
+
+    return addressesByVault
+  }, [addressQueries, vaults, selectedAsset])
+
+  // Get all addresses for the selected network, grouped by vault
+  const accountsWithBalances = useMemo(() => {
+    if (!selectedAsset || isLoadingAddresses || addressError) {
       return []
     }
 
@@ -64,8 +102,8 @@ const ToVaultSelector = ({
 
     const accounts: AccountWithBalance[] = []
 
-    // Iterate through all vaults in the network
-    for (const [vaultId, addresses] of Object.entries(network)) {
+    // Iterate through all vaults that have addresses
+    for (const [vaultId, addresses] of Object.entries(allAddresses)) {
       const vaultBalances = assetBalances[vaultId] || []
 
       // Match addresses with balances by array index (assuming address[0] = accountIndex 0, etc.)
@@ -106,7 +144,7 @@ const ToVaultSelector = ({
     }
 
     return accounts
-  }, [selectedAsset, vaults])
+  }, [selectedAsset, vaults, allAddresses, isLoadingAddresses, addressError])
 
   // Filter accounts by selected vault
   const filteredAccounts = useMemo(() => {
@@ -161,9 +199,7 @@ const ToVaultSelector = ({
     </div>
   ) : null
 
-  const isLoading = false
-  const error = null
-  const showExpandedContent = !!selectedAsset
+  const showExpandedContent = !!selectedAsset && !isLoading && !error
 
   return (
     <SelectableField

@@ -61,14 +61,14 @@ export const useTransferFormValidation = ({
   }, [hasAttemptedSubmit, validateForm])
 
   // Show error for a field only if:
-  // 1. Submit was attempted AND field hasn't been touched yet, OR
-  // 2. Field has been touched but still has a validation error
+  // 1. Submit was attempted AND field has a validation error
+  // 2. Once a field is touched and fixed, the error clears automatically (hasError becomes false)
   const shouldShowError = (fieldName: keyof TransferFormInputValues): boolean => {
     if (!hasAttemptedSubmit) return false
     const hasError = !!fieldErrors[fieldName]
-    const isTouched = touchedFields.has(fieldName)
-    // Show error if: (not touched yet) OR (touched but still has error)
-    return !isTouched || (isTouched && hasError)
+    // Only show error if field actually has a validation error
+    // The touched state is used to track user interaction, but errors are shown based on actual validation state
+    return hasError
   }
 
   const assetError = shouldShowError('asset')
