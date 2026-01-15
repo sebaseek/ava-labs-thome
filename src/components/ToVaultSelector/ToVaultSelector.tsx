@@ -181,12 +181,12 @@ const ToVaultSelector = ({ onFieldClick, hasError = false }: ToVaultSelectorProp
             'mb-4 rounded-[8px] border border-blue-5-transparency-15 bg-white-transparency-40 p-2 backdrop-blur-[40px]',
           )}
         >
-          <div className="flex gap-[5px]">
+          <div className="flex gap-[5px] overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
               type="button"
               onClick={() => setSelectedVaultFilter(null)}
               className={cn(
-                'rounded-[8px] px-4 py-2 text-base font-semibold transition-colors',
+                'shrink-0 rounded-[8px] px-4 py-2 text-base font-semibold transition-colors whitespace-nowrap',
                 selectedVaultFilter === null
                   ? 'bg-blue-highlight-4 text-blue-2'
                   : 'text-blue-5 hover:bg-white-transparency-40',
@@ -208,7 +208,7 @@ const ToVaultSelector = ({ onFieldClick, hasError = false }: ToVaultSelectorProp
                   type="button"
                   onClick={() => setSelectedVaultFilter(vault.id)}
                   className={cn(
-                    'rounded-[8px] px-4 py-2 text-base font-semibold transition-colors',
+                    'shrink-0 rounded-[8px] px-4 py-2 text-base font-semibold transition-colors whitespace-nowrap',
                     selectedVaultFilter === vault.id
                       ? 'bg-blue-highlight-4 text-blue-2'
                       : 'text-blue-5 hover:bg-white-transparency-40',

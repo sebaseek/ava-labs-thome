@@ -11,7 +11,7 @@ export interface BalanceDisplayProps {
 export const BalanceDisplay = ({ availableBalanceDisplay, hasError }: BalanceDisplayProps) => {
   return (
     <div className="flex items-center">
-      <div className="ml-[200px] flex items-center gap-[15px]">
+      <div className="ml-0 flex items-center gap-[15px] sm:ml-[200px]">
         {!hasError && (
           <span className="text-xs font-medium leading-[100%] text-gray-1 font-sans">
             Available

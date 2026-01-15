@@ -42,7 +42,7 @@ describe('TransferSuccess', () => {
     render(<TransferSuccess />)
     const image = screen.getByAltText('Success')
     expect(image).toBeInTheDocument()
-    expect(image).toHaveAttribute('src', '/images/Ellipsis.png')
+    expect(image).toHaveAttribute('src', expect.stringContaining('images/Ellipsis.png'))
   })
 
   it('has correct button styles', () => {

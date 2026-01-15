@@ -58,15 +58,15 @@ const SelectableField = ({
         onClick={() => canInteract && onToggle()}
         disabled={!canInteract}
         className={cn(
-          'flex h-[80px] w-full items-center justify-between px-[25px] py-[15px]',
+          'flex h-[80px] w-full items-center justify-between px-4 py-[15px] sm:px-[25px]',
           'transition-colors duration-200',
           isLoading && 'cursor-wait',
           error && 'cursor-not-allowed',
         )}
       >
         {/* Left: Label + Content */}
-        <div className="flex items-center gap-[80px]">
-          <span className="w-[120px] shrink-0 text-left text-base font-semibold leading-[19px] text-blue-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-[80px]">
+          <span className="w-[60px] shrink-0 text-left text-base font-semibold leading-[19px] text-blue-1 sm:w-[120px]">
             {label}
           </span>
 
@@ -105,7 +105,7 @@ const SelectableField = ({
 
       {/* Expanded Content */}
       {isOpen && showExpandedContent && children && (
-        <div className="ml-[200px] px-[25px] pb-6 pt-4">{children}</div>
+        <div className="ml-0 px-4 pb-6 pt-4 sm:ml-[200px] sm:px-[25px]">{children}</div>
       )}
     </Card>
   )

@@ -119,12 +119,12 @@ export const Transfer = () => {
 
   return (
     <div
-      className="min-h-screen p-4 md:p-8"
+      className="min-h-screen p-4 sm:p-8"
       style={{
         background: 'var(--color-gradient-background)',
       }}
     >
-      <div className="mx-auto max-w-[1200px]">
+      <div className="mx-auto w-full max-w-[1200px]">
         {transferCompleted ? (
           /* Success Screen */
           <div className="flex items-center justify-center py-12">
@@ -137,17 +137,17 @@ export const Transfer = () => {
           /* Form Screen */
           <>
             {/* Title - Full Width Row */}
-            <Typography variant="h3" className="mb-6 text-blue-1 md:mb-8">
+            <Typography variant="h3" className="mb-4 text-blue-1 sm:mb-8">
               Transfer
             </Typography>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-[120px_1fr] md:gap-12">
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-[120px_1fr] sm:gap-12">
               {/* Left Column - Stepper (hidden on mobile) */}
-              <div className="hidden md:block">
+              <div className="hidden sm:block">
                 <Stepper activeStep={activeStep} />
               </div>
 
               {/* Right Column - Form Fields */}
-              <div className="space-y-4">
+              <div className="w-full space-y-4">
                 {/* Asset Selector */}
                 <AssetSelector onFieldClick={() => handleStepClick(0)} hasError={assetError} />
                 {/* Vault Selector */}

@@ -69,9 +69,9 @@ export const MaxButton = ({ onClick, isMaxAmount }: MaxButtonProps) => {
         type="button"
         onClick={handleMaxClick}
         className={cn(
-          'h-[40px] shrink-0 rounded-[8px] px-4',
+          'h-[48px] shrink-0 rounded-[8px] px-3 sm:px-4',
           'bg-blue-5-transparency-30 backdrop-blur-[15px]',
-          'text-sm font-medium leading-[120%] text-blue-1',
+          'text-xs sm:text-sm font-medium leading-[120%] text-blue-1',
           'transition-colors duration-200',
           'hover:bg-blue-5/40',
         )}

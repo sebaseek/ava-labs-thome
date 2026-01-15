@@ -9,7 +9,7 @@ export const TransferSuccess = ({ onViewTransaction, onNewRequest }: TransferSuc
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Ellipsis Image */}
-      <img src="/images/Ellipsis.png" alt="Success" className="mb-5" />
+      <img src={`${import.meta.env.BASE_URL}images/Ellipsis.png`} alt="Success" className="mb-5" />
 
       {/* Success Title */}
       <Typography variant="h2" className="mb-5 text-center text-blue-1">

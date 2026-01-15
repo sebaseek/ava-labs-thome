@@ -32,23 +32,24 @@ export const AmountInput = ({
         onFocus={onFocus}
         placeholder={placeholder}
         className={cn(
-          'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-20 py-1',
+          'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-12 sm:pr-20 py-1',
           'font-sans text-base font-medium leading-[120%]',
           'transition-colors duration-200 outline-none',
           hasError
             ? 'border-red-highlight-2 focus:border-red-highlight-2 focus:ring-2 focus:ring-red-highlight-2-transparency-40'
             : 'border-blue-5-transparency-30 focus:border-blue-5 focus:ring-2 focus:ring-blue-5/20',
-          hasValue ? 'text-blue-1' : 'text-blue-5 placeholder:text-blue-5/70',
+          // Always show text-blue-1 when there's any value (even if being typed), otherwise use placeholder color
+          value && value.trim() !== '' ? 'text-blue-1' : 'text-blue-5 placeholder:text-blue-5/70',
         )}
       />
       {selectedAsset && (
-        <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+        <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 sm:right-3 sm:gap-1.5">
           <img
             src={selectedAsset.logoUri}
             alt={selectedAsset.symbol}
-            className="h-[18px] w-[18px]"
+            className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]"
           />
-          <span className="text-sm font-medium text-blue-1">{selectedAsset.symbol}</span>
+          <span className="text-xs sm:text-sm font-medium text-blue-1">{selectedAsset.symbol}</span>
         </div>
       )}
     </div>
