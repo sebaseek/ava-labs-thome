@@ -4,17 +4,22 @@ import { type Asset, fetchAssets } from '@/api/assets'
 import { fetchNetworks } from '@/api/networks'
 import { assetToVaultBalances } from '@/api/vault-balances'
 import { EmptyState, SearchableList, SelectableField, SelectableItem } from '@/components/ui'
-import { useSelectedAsset } from '@/hooks/useSelectedAsset'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
 import { calculateTotalBalance, formatBalance } from '@/utils/balance'
 
 interface AssetSelectorProps {
+  selectedAsset: Asset | null
+  setSelectedAsset: (asset: Asset | null) => void
   onFieldClick?: () => void
   hasError?: boolean
 }
 
-const AssetSelector = ({ onFieldClick, hasError = false }: AssetSelectorProps = {}) => {
-  const { selectedAsset, setSelectedAsset } = useSelectedAsset()
+const AssetSelector = ({
+  selectedAsset,
+  setSelectedAsset,
+  onFieldClick,
+  hasError = false,
+}: AssetSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 

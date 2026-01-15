@@ -2,15 +2,20 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { fetchVaults, type Vault } from '@/api/vaults'
 import { EmptyState, SearchableList, SelectableField, SelectableItem } from '@/components/ui'
-import { useSelectedVault } from '@/hooks/useSelectedVault'
 
 interface VaultSelectorProps {
+  selectedVault: Vault | null
+  setSelectedVault: (vault: Vault | null) => void
   onFieldClick?: () => void
   hasError?: boolean
 }
 
-const VaultSelector = ({ onFieldClick, hasError = false }: VaultSelectorProps = {}) => {
-  const { selectedVault, setSelectedVault } = useSelectedVault()
+const VaultSelector = ({
+  selectedVault,
+  setSelectedVault,
+  onFieldClick,
+  hasError = false,
+}: VaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 

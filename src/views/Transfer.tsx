@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   AmountSelector,
   AssetSelector,
@@ -11,24 +11,19 @@ import {
   Typography,
   VaultSelector,
 } from '@/components'
-import type { FormType } from '@/hooks/form-types'
 import { useFormReset } from '@/hooks/useFormReset'
-import { useFormStateSync } from '@/hooks/useFormStateSync'
-import { useSelectedAsset } from '@/hooks/useSelectedAsset'
-import { useSelectedToAddress } from '@/hooks/useSelectedToAddress'
-import { useSelectedVault } from '@/hooks/useSelectedVault'
 import { useStepNavigation } from '@/hooks/useStepNavigation'
 import { useTransferFormValidation } from '@/hooks/useTransferFormValidation'
 import type { TransferFormInputValues } from '@/schemas/transfer'
 import { transferFormSchema } from '@/schemas/transfer'
 
 export const Transfer = () => {
-  const { selectedAsset, setSelectedAsset } = useSelectedAsset()
-  const { selectedVault, setSelectedVault } = useSelectedVault()
-  const { selectedAddress, setSelectedAddress } = useSelectedToAddress()
   const [transferCompleted, setTransferCompleted] = useState(false)
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+  // Track which fields have been touched/edited after submit attempt
+  const [touchedFields, setTouchedFields] = useState<Set<keyof TransferFormInputValues>>(new Set())
 
+  // Form manages all form state including selections
   const form = useForm({
     defaultValues: {
       asset: null,
@@ -46,41 +41,59 @@ export const Transfer = () => {
     },
   })
 
-  // Sync hook-based state with form state
-  useFormStateSync({
-    form: form as FormType,
-    selectedAsset,
-    selectedVault,
-    selectedAddress,
-  })
+  // Track form values for reactivity - subscribe to form store changes
+  // This ensures components re-render when form state changes
+  const [formValues, setFormValues] = useState(form.state.values)
+  const prevAssetIdRef = useRef<string | null>(form.state.values.asset?.id ?? null)
 
-  // Step navigation logic
+  useEffect(() => {
+    // Subscribe to form store changes - form.store is reactive
+    const unsubscribe = form.store.subscribe(() => {
+      const newValues = { ...form.state.values }
+      setFormValues(newValues)
+
+      // Clear dependent fields when asset changes
+      const newAssetId = newValues.asset?.id ?? null
+      if (prevAssetIdRef.current !== newAssetId && prevAssetIdRef.current !== null) {
+        form.setFieldValue('vault', null)
+        form.setFieldValue('toAddress', null)
+        form.setFieldValue('amount', '0.00')
+      }
+      prevAssetIdRef.current = newAssetId
+    })
+    return unsubscribe
+  }, [form])
+
+  // Step navigation logic - reads from form state
   const { activeStep, handleStepClick } = useStepNavigation({
-    selectedAsset,
-    selectedVault,
+    selectedAsset: formValues.asset,
+    selectedVault: formValues.vault,
   })
 
   // Form reset logic
   const { resetForm } = useFormReset({
-    form: form as FormType,
+    form,
     setters: {
-      setSelectedAsset,
-      setSelectedVault,
-      setSelectedAddress,
       setTransferCompleted,
       setHasAttemptedSubmit,
+      setTouchedFields: (fields) => setTouchedFields(fields as Set<keyof TransferFormInputValues>),
     },
   })
 
-  // Form validation logic
+  // Form validation logic - reads from form state
   const { assetError, vaultError, toAddressError, amountError, validateForm } =
     useTransferFormValidation({
-      form: form as FormType,
-      selectedAsset,
-      selectedVault,
-      selectedAddress,
+      form: { state: { values: formValues } },
       hasAttemptedSubmit,
+      touchedFields,
     })
+
+  // Helper to mark field as touched when edited after submit
+  const markFieldTouched = (fieldName: keyof TransferFormInputValues) => {
+    if (hasAttemptedSubmit) {
+      setTouchedFields((prev) => new Set(prev).add(fieldName))
+    }
+  }
 
   const handleStartOver = () => {
     resetForm()
@@ -89,20 +102,13 @@ export const Transfer = () => {
   const handleSubmitTransfer = async () => {
     setHasAttemptedSubmit(true)
 
-    // Update form values from hook state before validation
-    form.setFieldValue('asset', selectedAsset as any)
-    form.setFieldValue('vault', selectedVault as any)
-    form.setFieldValue('toAddress', selectedAddress as any)
-
-    // Validate form using Zod schema
+    // Validate form using Zod schema - validation reads from form state
     const result = validateForm()
 
     if (result.success) {
       setTransferCompleted(true)
-    } else {
-      // Validation failed - errors will be shown via hasError props
-      // The form state will be updated but we don't proceed
     }
+    // Validation failed - errors will be shown via hasError props
   }
 
   const handleNewRequest = () => {
@@ -149,21 +155,58 @@ export const Transfer = () => {
               {/* Right Column - Form Fields */}
               <div className="w-full space-y-4">
                 {/* Asset Selector */}
-                <AssetSelector onFieldClick={() => handleStepClick(0)} hasError={assetError} />
+                <form.Field name="asset">
+                  {(field) => (
+                    <AssetSelector
+                      selectedAsset={field.state.value}
+                      setSelectedAsset={(asset) => {
+                        field.handleChange(asset)
+                        markFieldTouched('asset')
+                      }}
+                      onFieldClick={() => handleStepClick(0)}
+                      hasError={assetError}
+                    />
+                  )}
+                </form.Field>
                 {/* Vault Selector */}
-                <VaultSelector onFieldClick={() => handleStepClick(1)} hasError={vaultError} />
+                <form.Field name="vault">
+                  {(field) => (
+                    <VaultSelector
+                      selectedVault={field.state.value}
+                      setSelectedVault={(vault) => {
+                        field.handleChange(vault)
+                        markFieldTouched('vault')
+                      }}
+                      onFieldClick={() => handleStepClick(1)}
+                      hasError={vaultError}
+                    />
+                  )}
+                </form.Field>
                 {/* To Vault Selector */}
-                <ToVaultSelector
-                  onFieldClick={() => handleStepClick(2)}
-                  hasError={toAddressError}
-                />
+                <form.Field name="toAddress">
+                  {(field) => (
+                    <ToVaultSelector
+                      selectedAsset={formValues.asset}
+                      selectedAddress={field.state.value}
+                      setSelectedAddress={(address) => {
+                        field.handleChange(address)
+                        markFieldTouched('toAddress')
+                      }}
+                      onFieldClick={() => handleStepClick(2)}
+                      hasError={toAddressError}
+                    />
+                  )}
+                </form.Field>
                 {/* Amount Selector */}
                 <form.Field name="amount">
                   {(field) => (
                     <AmountSelector
+                      selectedAsset={formValues.asset}
+                      selectedVault={formValues.vault}
                       amount={field.state.value}
                       setAmount={(value) => {
                         field.handleChange(value)
+                        markFieldTouched('amount')
                       }}
                       onFieldClick={() => handleStepClick(3)}
                       hasError={amountError}
@@ -177,6 +220,7 @@ export const Transfer = () => {
                       value={field.state.value}
                       onChange={(value) => {
                         field.handleChange(value)
+                        markFieldTouched('memo')
                       }}
                       onFieldClick={() => handleStepClick(4)}
                     />

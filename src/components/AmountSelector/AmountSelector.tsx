@@ -1,15 +1,17 @@
+import type { Asset } from '@/api/assets'
+import type { Vault } from '@/api/vaults'
 import { Card, FormField } from '@/components/ui'
 import { useAmountCalculations } from '@/hooks/useAmountCalculations'
 import { useAmountInput } from '@/hooks/useAmountInput'
 import { useBalanceDisplay } from '@/hooks/useBalanceDisplay'
-import { useSelectedAsset } from '@/hooks/useSelectedAsset'
-import { useSelectedVault } from '@/hooks/useSelectedVault'
 import { AmountInput } from './AmountInput'
 import { BalanceDisplay } from './BalanceDisplay'
 import { FeeDisplay } from './FeeDisplay'
 import { MaxButton } from './MaxButton'
 
 interface AmountSelectorProps {
+  selectedAsset: Asset | null
+  selectedVault: Vault | null
   onFieldClick?: () => void
   amount?: string
   setAmount?: (value: string) => void
@@ -17,14 +19,13 @@ interface AmountSelectorProps {
 }
 
 export const AmountSelector = ({
+  selectedAsset,
+  selectedVault,
   onFieldClick,
   amount,
   setAmount,
   hasError = false,
-}: AmountSelectorProps = {}) => {
-  const { selectedAsset } = useSelectedAsset()
-  const { selectedVault } = useSelectedVault()
-
+}: AmountSelectorProps) => {
   // Get all calculations (fee, balances, max amount, etc.)
   // Note: currentAmount is calculated internally, we pass the external amount
   const { fee, feeError, balanceError, availableBalance, formattedFee, maxAmount, isMaxAmount } =

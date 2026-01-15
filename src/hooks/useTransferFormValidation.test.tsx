@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Address } from '@/api/addresses'
 import type { Asset } from '@/api/assets'
 import type { Vault } from '@/api/vaults'
+import type { TransferFormInputValues } from '@/schemas/transfer'
 import { useTransferFormValidation } from './useTransferFormValidation'
 
 const mockAsset: Asset = {
@@ -57,15 +58,12 @@ describe('useTransferFormValidation', () => {
             toAddress: mockAddress,
             amount: '100.00',
             memo: '',
-          },
+          } as TransferFormInputValues,
         })
-
         return useTransferFormValidation({
-          form: form as any,
-          selectedAsset: mockAsset,
-          selectedVault: mockVault,
-          selectedAddress: mockAddress,
+          form,
           hasAttemptedSubmit: false,
+          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -88,15 +86,12 @@ describe('useTransferFormValidation', () => {
             toAddress: null,
             amount: '0.00',
             memo: '',
-          },
+          } as TransferFormInputValues,
         })
-
         return useTransferFormValidation({
-          form: form as any,
-          selectedAsset: null,
-          selectedVault: null,
-          selectedAddress: null,
+          form,
           hasAttemptedSubmit: true,
+          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -119,15 +114,12 @@ describe('useTransferFormValidation', () => {
             toAddress: mockAddress,
             amount: '0.00',
             memo: '',
-          },
+          } as TransferFormInputValues,
         })
-
         return useTransferFormValidation({
-          form: form as any,
-          selectedAsset: mockAsset,
-          selectedVault: mockVault,
-          selectedAddress: mockAddress,
+          form,
           hasAttemptedSubmit: true,
+          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -147,15 +139,12 @@ describe('useTransferFormValidation', () => {
             toAddress: mockAddress,
             amount: '100.00',
             memo: '',
-          },
+          } as TransferFormInputValues,
         })
-
         return useTransferFormValidation({
-          form: form as any,
-          selectedAsset: null,
-          selectedVault: mockVault,
-          selectedAddress: mockAddress,
+          form,
           hasAttemptedSubmit: true,
+          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -175,15 +164,12 @@ describe('useTransferFormValidation', () => {
             toAddress: mockAddress,
             amount: '100.00',
             memo: '',
-          },
+          } as TransferFormInputValues,
         })
-
         return useTransferFormValidation({
-          form: form as any,
-          selectedAsset: mockAsset,
-          selectedVault: mockVault,
-          selectedAddress: mockAddress,
+          form,
           hasAttemptedSubmit: false,
+          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },

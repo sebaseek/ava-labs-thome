@@ -17,20 +17,6 @@ const mockSelectedAsset = {
 }
 
 const mockSelectedVault = { id: '1', name: 'Vault 1' }
-
-vi.mock('@/hooks/useSelectedAsset', () => ({
-  useSelectedAsset: vi.fn(() => ({
-    selectedAsset: mockSelectedAsset,
-  })),
-}))
-
-vi.mock('@/hooks/useSelectedVault', () => ({
-  useSelectedVault: vi.fn(() => ({
-    selectedVault: mockSelectedVault,
-  })),
-}))
-
-// Mock the new hooks
 vi.mock('@/hooks/useAmountCalculations', () => ({
   useAmountCalculations: vi.fn(() => ({
     fee: '100000000000000000',
@@ -89,18 +75,29 @@ describe('AmountSelector', () => {
   })
 
   it('renders amount input field', () => {
-    renderWithProviders(<AmountSelector />)
+    renderWithProviders(
+      <AmountSelector selectedAsset={mockSelectedAsset} selectedVault={mockSelectedVault} />,
+    )
     expect(screen.getByPlaceholderText('0.00')).toBeInTheDocument()
   })
 
   it('renders MAX button', () => {
-    renderWithProviders(<AmountSelector />)
+    renderWithProviders(
+      <AmountSelector selectedAsset={mockSelectedAsset} selectedVault={mockSelectedVault} />,
+    )
     expect(screen.getByRole('button', { name: /MAX/i })).toBeInTheDocument()
   })
 
   it('calls setAmount when amount prop is provided', async () => {
     const setAmount = vi.fn()
-    renderWithProviders(<AmountSelector amount="100" setAmount={setAmount} />)
+    renderWithProviders(
+      <AmountSelector
+        selectedAsset={mockSelectedAsset}
+        selectedVault={mockSelectedVault}
+        amount="100"
+        setAmount={setAmount}
+      />,
+    )
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('100')).toBeInTheDocument()
@@ -108,7 +105,13 @@ describe('AmountSelector', () => {
   })
 
   it('shows error border on input when hasError is true', async () => {
-    const { container } = renderWithProviders(<AmountSelector hasError />)
+    const { container } = renderWithProviders(
+      <AmountSelector
+        selectedAsset={mockSelectedAsset}
+        selectedVault={mockSelectedVault}
+        hasError
+      />,
+    )
     await waitFor(() => {
       const input = container.querySelector('input')
       expect(input).toHaveClass('border-red-highlight-2')
@@ -118,7 +121,13 @@ describe('AmountSelector', () => {
   it('calls onFieldClick when input is focused', async () => {
     const user = userEvent.setup()
     const handleFieldClick = vi.fn()
-    renderWithProviders(<AmountSelector onFieldClick={handleFieldClick} />)
+    renderWithProviders(
+      <AmountSelector
+        selectedAsset={mockSelectedAsset}
+        selectedVault={mockSelectedVault}
+        onFieldClick={handleFieldClick}
+      />,
+    )
     const input = screen.getByPlaceholderText('0.00')
     await user.click(input)
     expect(handleFieldClick).toHaveBeenCalledTimes(1)
@@ -127,7 +136,13 @@ describe('AmountSelector', () => {
   it('calls setAmount when user types', async () => {
     const user = userEvent.setup()
     const setAmount = vi.fn()
-    renderWithProviders(<AmountSelector setAmount={setAmount} />)
+    renderWithProviders(
+      <AmountSelector
+        selectedAsset={mockSelectedAsset}
+        selectedVault={mockSelectedVault}
+        setAmount={setAmount}
+      />,
+    )
     const input = screen.getByPlaceholderText('0.00')
     await user.type(input, '100')
     expect(setAmount).toHaveBeenCalled()
@@ -136,7 +151,13 @@ describe('AmountSelector', () => {
   it('handles max button click', async () => {
     const user = userEvent.setup()
     const setAmount = vi.fn()
-    renderWithProviders(<AmountSelector setAmount={setAmount} />)
+    renderWithProviders(
+      <AmountSelector
+        selectedAsset={mockSelectedAsset}
+        selectedVault={mockSelectedVault}
+        setAmount={setAmount}
+      />,
+    )
 
     await waitFor(() => {
       const maxButton = screen.getByRole('button', { name: /MAX/i })

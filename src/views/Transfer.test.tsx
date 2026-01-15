@@ -6,36 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Transfer } from './Transfer'
 
 // Mock the hooks
-const mockSetSelectedAsset = vi.fn()
-const mockSetSelectedVault = vi.fn()
-const mockSetSelectedAddress = vi.fn()
-
-vi.mock('@/hooks/useSelectedAsset', () => ({
-  useSelectedAsset: vi.fn(() => ({
-    selectedAsset: null,
-    setSelectedAsset: mockSetSelectedAsset,
-  })),
-}))
-
-vi.mock('@/hooks/useSelectedVault', () => ({
-  useSelectedVault: vi.fn(() => ({
-    selectedVault: null,
-    setSelectedVault: mockSetSelectedVault,
-  })),
-}))
-
-vi.mock('@/hooks/useSelectedToAddress', () => ({
-  useSelectedToAddress: vi.fn(() => ({
-    selectedAddress: null,
-    setSelectedAddress: mockSetSelectedAddress,
-  })),
-}))
-
-// Mock the new hooks
-vi.mock('@/hooks/useFormStateSync', () => ({
-  useFormStateSync: vi.fn(() => {}),
-}))
-
 vi.mock('@/hooks/useStepNavigation', () => ({
   useStepNavigation: vi.fn(() => ({
     activeStep: null,

@@ -2,12 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import type { Address } from '@/api/addresses'
 import { networkToVaultToAddresses } from '@/api/addresses'
+import type { Asset } from '@/api/assets'
 import { assetToVaultBalances } from '@/api/vault-balances'
 import { fetchVaults } from '@/api/vaults'
 import { EmptyState, SelectableField, SelectableItem } from '@/components/ui'
 import { cn } from '@/components/utils'
-import { useSelectedAsset } from '@/hooks/useSelectedAsset'
-import { useSelectedToAddress } from '@/hooks/useSelectedToAddress'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
 import { formatBalance } from '@/utils/balance'
 
@@ -22,13 +21,20 @@ interface AccountWithBalance {
 }
 
 interface ToVaultSelectorProps {
+  selectedAsset: Asset | null
+  selectedAddress: Address | null
+  setSelectedAddress: (address: Address | null) => void
   onFieldClick?: () => void
   hasError?: boolean
 }
 
-const ToVaultSelector = ({ onFieldClick, hasError = false }: ToVaultSelectorProps = {}) => {
-  const { selectedAsset } = useSelectedAsset()
-  const { selectedAddress, setSelectedAddress } = useSelectedToAddress()
+const ToVaultSelector = ({
+  selectedAsset,
+  selectedAddress,
+  setSelectedAddress,
+  onFieldClick,
+  hasError = false,
+}: ToVaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedVaultFilter, setSelectedVaultFilter] = useState<string | null>(null) // null = "All"
 
@@ -155,7 +161,7 @@ const ToVaultSelector = ({ onFieldClick, hasError = false }: ToVaultSelectorProp
 
   const isLoading = false
   const error = null
-  const showExpandedContent = true
+  const showExpandedContent = !!selectedAsset
 
   return (
     <SelectableField

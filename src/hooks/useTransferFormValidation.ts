@@ -1,16 +1,15 @@
 import { useCallback, useMemo } from 'react'
-import type { Address } from '@/api/addresses'
-import type { Asset } from '@/api/assets'
-import type { Vault } from '@/api/vaults'
+import type { TransferFormInputValues } from '@/schemas/transfer'
 import { type TransferFormValues, transferFormSchema } from '@/schemas/transfer'
-import type { FormType } from './form-types'
 
 interface UseTransferFormValidationOptions {
-  form: FormType
-  selectedAsset: Asset | null
-  selectedVault: Vault | null
-  selectedAddress: Address | null
+  form: {
+    state: {
+      values: TransferFormInputValues
+    }
+  }
   hasAttemptedSubmit: boolean
+  touchedFields: Set<keyof TransferFormInputValues>
 }
 
 interface UseTransferFormValidationReturn {
@@ -24,25 +23,17 @@ interface UseTransferFormValidationReturn {
 
 /**
  * Hook for managing transfer form validation
- * Centralizes validation logic and error state management
+ * Reads directly from form state - single source of truth
  */
 export const useTransferFormValidation = ({
   form,
-  selectedAsset,
-  selectedVault,
-  selectedAddress,
   hasAttemptedSubmit,
+  touchedFields,
 }: UseTransferFormValidationOptions): UseTransferFormValidationReturn => {
-  // Validate form values using Zod schema
+  // Validate form values using Zod schema - reads from form state
   const validateForm = useCallback(() => {
-    const currentValues = {
-      ...form.state.values,
-      asset: selectedAsset,
-      vault: selectedVault,
-      toAddress: selectedAddress,
-    }
-    return transferFormSchema.safeParse(currentValues)
-  }, [form.state.values, selectedAsset, selectedVault, selectedAddress])
+    return transferFormSchema.safeParse(form.state.values)
+  }, [form.state.values])
 
   // Only validate and show errors if user has attempted to submit
   const fieldErrors: Partial<Record<keyof TransferFormValues, string>> = useMemo(() => {
@@ -63,10 +54,21 @@ export const useTransferFormValidation = ({
     return errors
   }, [hasAttemptedSubmit, validateForm])
 
-  const assetError = hasAttemptedSubmit && !!fieldErrors.asset
-  const vaultError = hasAttemptedSubmit && !!fieldErrors.vault
-  const toAddressError = hasAttemptedSubmit && !!fieldErrors.toAddress
-  const amountError = hasAttemptedSubmit && !!fieldErrors.amount
+  // Show error for a field only if:
+  // 1. Submit was attempted AND field hasn't been touched yet, OR
+  // 2. Field has been touched but still has a validation error
+  const shouldShowError = (fieldName: keyof TransferFormInputValues): boolean => {
+    if (!hasAttemptedSubmit) return false
+    const hasError = !!fieldErrors[fieldName]
+    const isTouched = touchedFields.has(fieldName)
+    // Show error if: (not touched yet) OR (touched but still has error)
+    return !isTouched || (isTouched && hasError)
+  }
+
+  const assetError = shouldShowError('asset')
+  const vaultError = shouldShowError('vault')
+  const toAddressError = shouldShowError('toAddress')
+  const amountError = shouldShowError('amount')
 
   return {
     fieldErrors,
