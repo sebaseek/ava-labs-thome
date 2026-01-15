@@ -6,7 +6,6 @@ export interface FormFieldProps {
   children: ReactNode
   className?: string
   labelWidth?: string
-  errorMessage?: string | null
 }
 
 /**

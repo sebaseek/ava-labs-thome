@@ -163,7 +163,7 @@ describe('useTransferFormValidation', () => {
             vault: mockVault,
             toAddress: mockAddress,
             amount: '100.00',
-            memo: '',
+            memo: 'Test memo',
           } as TransferFormInputValues,
         })
         return useTransferFormValidation({

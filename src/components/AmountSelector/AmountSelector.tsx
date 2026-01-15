@@ -71,7 +71,7 @@ export const AmountSelector = ({
     <>
       <Card hasError={hasError || hasInputError}>
         <div className="flex h-auto w-full flex-col">
-          <FormField label="Amount" errorMessage={showValidationError ? validationError : null}>
+          <FormField label="Amount">
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <AmountInput
                 value={displayAmount}

@@ -15,7 +15,7 @@ export const Memo = ({ value, onChange, onFieldClick, hasError = false, validati
   return (
     <>
       <Card hasError={hasError}>
-        <FormField label="Memo" errorMessage={showValidationError ? validationError : null}>
+        <FormField label="Memo">
           <input
             type="text"
             value={value}
