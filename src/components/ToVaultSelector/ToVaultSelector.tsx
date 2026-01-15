@@ -1,10 +1,10 @@
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import type { Address } from '@/api/addresses'
 import { fetchAddressesForVault } from '@/api/addresses'
 import type { Asset } from '@/api/assets'
 import { assetToVaultBalances } from '@/api/vault-balances'
-import { fetchVaults } from '@/api/vaults'
+import { fetchVaults, type Vault } from '@/api/vaults'
 import { EmptyState, SelectableField, SelectableItem } from '@/components/ui'
 import { cn } from '@/components/utils'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
@@ -24,6 +24,7 @@ interface ToVaultSelectorProps {
   selectedAsset: Asset | null
   selectedAddress: Address | null
   setSelectedAddress: (address: Address | null) => void
+  selectedVault: Vault | null
   onFieldClick?: () => void
   hasError?: boolean
   validationError?: string | null
@@ -33,14 +34,26 @@ const ToVaultSelector = ({
   selectedAsset,
   selectedAddress,
   setSelectedAddress,
+  selectedVault,
   onFieldClick,
   hasError = false,
   validationError,
 }: ToVaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedVaultFilter, setSelectedVaultFilter] = useState<string | null>(null) // null = "All"
+  const queryClient = useQueryClient()
 
-  // Fetch vaults for filter tabs
+  // Check if assets are loaded (not loading) first
+  const assetsQueryState = queryClient.getQueryState(['assets'])
+  const assetsLoaded = assetsQueryState?.status === 'success'
+  const assetsLoading = assetsQueryState?.status === 'loading'
+
+  // Check if vaults are loaded (not loading)
+  const vaultsQueryState = queryClient.getQueryState(['vaults'])
+  const vaultsLoaded = vaultsQueryState?.status === 'success'
+  const vaultsLoading = vaultsQueryState?.status === 'loading'
+
+  // Fetch vaults for filter tabs - only after assets are loaded
   const {
     data: vaults,
     isLoading: isLoadingVaults,
@@ -48,16 +61,18 @@ const ToVaultSelector = ({
   } = useQuery({
     queryKey: ['vaults'],
     queryFn: fetchVaults,
+    enabled: assetsLoaded, // Only enable after assets are successfully loaded
   })
 
   // Fetch addresses for all vaults in the selected network
+  // Only fetch after vault is selected (not just asset)
   const addressQueries = useQueries({
     queries:
-      selectedAsset && vaults && vaults.length > 0
+      selectedAsset && selectedVault && vaults && vaults.length > 0
         ? vaults.map((vault) => ({
             queryKey: ['addresses', selectedAsset.networkId, vault.id],
             queryFn: () => fetchAddressesForVault(selectedAsset.networkId, vault.id),
-            enabled: !!selectedAsset && !!vaults && vaults.length > 0,
+            enabled: !!selectedAsset && !!selectedVault && !!vaults && vaults.length > 0,
             retry: 1,
           }))
         : [],
@@ -69,10 +84,21 @@ const ToVaultSelector = ({
     addressQueries.length > 0 && addressQueries.every((query) => query.isLoading)
   const addressError = addressQueries.find((query) => query.error)?.error || null
 
-  // Show loading if vaults are loading OR addresses are loading
-  const isLoading = isLoadingVaults || (!!selectedAsset && isLoadingAddresses)
-  // Show error if vaults have error OR addresses have error
-  const error = vaultError || addressError
+  // Show loading only for addresses when:
+  // - Assets are done loading (not loading)
+  // - Vaults are done loading (not loading)
+  // - Vault is selected
+  // - Addresses are loading
+  // Don't show vault loading here - it's handled by VaultSelector
+  const isLoading =
+    assetsLoaded &&
+    !assetsLoading &&
+    vaultsLoaded &&
+    !vaultsLoading &&
+    !!selectedVault &&
+    isLoadingAddresses
+  // Show error if addresses have error (vault error is handled by VaultSelector)
+  const error = addressError
 
   // Combine all addresses from all vaults
   const allAddresses = useMemo(() => {
@@ -208,6 +234,10 @@ const ToVaultSelector = ({
 
   const showExpandedContent = !!selectedAsset && !isLoading && !error
 
+  // Disabled when: No asset selected OR no from-vault selected OR loading OR error
+  // Note: Loading/error states are handled by SelectableField's canInteract logic
+  const isDisabled = !selectedAsset || !selectedVault
+
   return (
     <SelectableField
       label="To"
@@ -225,6 +255,7 @@ const ToVaultSelector = ({
       showExpandedContent={showExpandedContent}
       hasError={hasError}
       validationError={validationError}
+      disabled={isDisabled}
     >
       {/* Vault Filter Tabs */}
       {selectedAsset && accountsWithBalances.length > 0 && (

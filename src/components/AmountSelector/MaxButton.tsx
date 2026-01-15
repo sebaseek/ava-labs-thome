@@ -4,12 +4,13 @@ import { cn } from '@/components/utils'
 export interface MaxButtonProps {
   onClick: () => void
   isMaxAmount: boolean
+  disabled?: boolean
 }
 
 /**
  * MaxButton component with tooltip for max amount feedback
  */
-export const MaxButton = ({ onClick, isMaxAmount }: MaxButtonProps) => {
+export const MaxButton = ({ onClick, isMaxAmount, disabled = false }: MaxButtonProps) => {
   const [showTooltip, setShowTooltip] = useState(false)
   const maxButtonRef = useRef<HTMLButtonElement>(null)
   const tooltipTimeoutRef = useRef<number | null>(null)
@@ -68,12 +69,14 @@ export const MaxButton = ({ onClick, isMaxAmount }: MaxButtonProps) => {
         ref={maxButtonRef}
         type="button"
         onClick={handleMaxClick}
+        disabled={disabled}
         className={cn(
           'h-[48px] shrink-0 rounded-[8px] px-3 sm:px-4',
           'bg-blue-5-transparency-30 backdrop-blur-[15px]',
           'text-xs sm:text-sm font-medium leading-[120%] text-blue-1',
           'transition-colors duration-200',
-          'hover:bg-blue-5/40',
+          !disabled && 'hover:bg-blue-5/40',
+          disabled && 'cursor-not-allowed opacity-50',
         )}
       >
         MAX

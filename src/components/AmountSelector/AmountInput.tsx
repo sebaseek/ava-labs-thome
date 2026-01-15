@@ -9,6 +9,7 @@ export interface AmountInputProps {
   hasValue?: boolean
   selectedAsset: Asset | null
   onFocus?: () => void
+  disabled?: boolean
 }
 
 /**
@@ -21,6 +22,7 @@ export const AmountInput = ({
   hasError = false,
   selectedAsset,
   onFocus,
+  disabled = false,
 }: AmountInputProps) => {
   return (
     <div className="relative min-w-0 flex-1">
@@ -30,10 +32,12 @@ export const AmountInput = ({
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         placeholder={placeholder}
+        disabled={disabled}
         className={cn(
           'h-[48px] w-full rounded-[8px] border bg-white pl-4 pr-12 sm:pr-20 py-1',
           'font-sans text-base font-medium leading-[120%]',
           'transition-colors duration-200 outline-none',
+          disabled && 'cursor-not-allowed opacity-50',
           hasError
             ? 'border-red-highlight-2 focus:border-red-highlight-2 focus:ring-2 focus:ring-red-highlight-2-transparency-40'
             : 'border-blue-5-transparency-30 focus:border-blue-5 focus:ring-2 focus:ring-blue-5/20',

@@ -2,7 +2,7 @@ import { Info } from 'lucide-react'
 import type { Asset } from '@/api/assets'
 
 export interface FeeDisplayProps {
-  formattedFee: string
+  formattedFee: string | null
   selectedAsset: Asset | null
   feeError: boolean | Error | null
 }
@@ -19,16 +19,17 @@ export const FeeDisplay = ({ formattedFee, selectedAsset, feeError }: FeeDisplay
           <Info className="h-2.5 w-2.5 text-blue-5" />
         </div>
 
-        {selectedAsset &&
-          (feeError ? (
-            <span className="text-base font-medium leading-[120%] text-red-highlight-2">
-              Unable to load fee
-            </span>
-          ) : formattedFee ? (
-            <span className="text-base font-medium leading-[120%] text-blue-5">
-              {formattedFee} {selectedAsset.symbol}
-            </span>
-          ) : null)}
+        {selectedAsset && formattedFee !== null && !feeError ? (
+          <span className="text-base font-medium leading-[120%] text-blue-5">
+            {formattedFee} {selectedAsset.symbol}
+          </span>
+        ) : selectedAsset && feeError ? (
+          <span className="text-base font-medium leading-[120%] text-red-highlight-2">
+            Unable to load fee
+          </span>
+        ) : (
+          <span className="text-base font-medium leading-[120%] text-blue-5">--</span>
+        )}
       </div>
     </div>
   )

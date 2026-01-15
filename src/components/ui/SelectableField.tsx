@@ -18,6 +18,7 @@ export type SelectableFieldProps = {
   showExpandedContent?: boolean
   hasError?: boolean
   validationError?: string | null
+  disabled?: boolean
 }
 
 const getErrorMessage = (error: boolean | Error | null, defaultMessage: string): string => {
@@ -40,8 +41,9 @@ const SelectableField = ({
   showExpandedContent = true,
   hasError = false,
   validationError,
+  disabled = false,
 }: SelectableFieldProps) => {
-  const canInteract = !isLoading && !error
+  const canInteract = !isLoading && !error && !disabled
   const showValidationError = hasError && validationError
 
   return (
@@ -52,6 +54,8 @@ const SelectableField = ({
           !isOpen && canInteract && 'hover:bg-white',
           // Shadow only when focused
           'focus-within:shadow-[0px_4px_20px_0px_rgba(104,129,153,0.3)]',
+          // Disabled state - reduce opacity
+          disabled && !isLoading && !error && 'opacity-60',
         )}
         hover={false}
         hasError={hasError}
@@ -65,7 +69,7 @@ const SelectableField = ({
             'flex h-[80px] w-full items-center justify-between px-4 py-[15px] sm:px-[25px]',
             'transition-colors duration-200',
             isLoading && 'cursor-wait',
-            error && 'cursor-not-allowed',
+            (error || disabled) && 'cursor-not-allowed',
           )}
         >
           {/* Left: Label + Content */}
@@ -89,8 +93,9 @@ const SelectableField = ({
               </div>
             )}
 
-            {canInteract && content && content}
-            {canInteract && !content && placeholder && (
+            {/* Show content/placeholder only when NOT loading and NOT error */}
+            {!isLoading && !error && content && content}
+            {!isLoading && !error && !content && placeholder && (
               <Text size="base" weight="medium" leading="tight" active={isOpen}>
                 {placeholder}
               </Text>
@@ -99,7 +104,8 @@ const SelectableField = ({
 
           {/* Right: Icon */}
           {isLoading && !error && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-blue-5" />}
-          {canInteract &&
+          {/* Always show chevron, even when disabled */}
+          {!isLoading &&
             (isOpen ? (
               <ChevronUp className="h-5 w-5 shrink-0 text-blue-1" />
             ) : (

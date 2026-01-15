@@ -189,6 +189,7 @@ export const Transfer = () => {
                         field.handleChange(vault)
                         markFieldTouched('vault')
                       }}
+                      selectedAsset={formValues.asset}
                       onFieldClick={() => handleStepClick(1)}
                       hasError={vaultError}
                       validationError={vaultErrorMessage}
@@ -205,6 +206,7 @@ export const Transfer = () => {
                         field.handleChange(address)
                         markFieldTouched('toAddress')
                       }}
+                      selectedVault={formValues.vault}
                       onFieldClick={() => handleStepClick(2)}
                       hasError={toAddressError}
                       validationError={toAddressErrorMessage}

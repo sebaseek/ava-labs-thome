@@ -1,11 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import type { Asset } from '@/api/assets'
 import { fetchVaults, type Vault } from '@/api/vaults'
 import { EmptyState, SearchableList, SelectableField, SelectableItem } from '@/components/ui'
 
 interface VaultSelectorProps {
   selectedVault: Vault | null
   setSelectedVault: (vault: Vault | null) => void
+  selectedAsset: Asset | null
   onFieldClick?: () => void
   hasError?: boolean
   validationError?: string | null
@@ -14,13 +16,21 @@ interface VaultSelectorProps {
 const VaultSelector = ({
   selectedVault,
   setSelectedVault,
+  selectedAsset,
   onFieldClick,
   hasError = false,
   validationError,
 }: VaultSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const queryClient = useQueryClient()
 
+  // Check if assets are loaded (not loading) first
+  const assetsQueryState = queryClient.getQueryState(['assets'])
+  const assetsLoaded = assetsQueryState?.status === 'success'
+  const assetsLoading = assetsQueryState?.status === 'loading'
+
+  // Only fetch vaults after assets are loaded (not while assets are loading)
   const {
     data: vaults,
     isLoading,
@@ -28,7 +38,15 @@ const VaultSelector = ({
   } = useQuery({
     queryKey: ['vaults'],
     queryFn: fetchVaults,
+    enabled: assetsLoaded, // Only enable after assets are successfully loaded
   })
+
+  // Only show loading if assets are done loading AND vaults are loading
+  const showLoading = assetsLoaded && isLoading && !assetsLoading
+
+  // Disabled when: No asset selected OR loading OR error
+  // Note: Loading/error states are handled by SelectableField's canInteract logic
+  const isDisabled = !selectedAsset
 
   const filteredVaults = useMemo(
     () => vaults?.filter((vault) => vault.name.toLowerCase().includes(searchQuery.toLowerCase())),
@@ -55,7 +73,7 @@ const VaultSelector = ({
         setIsOpen(!isOpen)
         onFieldClick?.()
       }}
-      isLoading={isLoading}
+      isLoading={showLoading}
       error={error}
       content={selectedContent}
       placeholder="Select source"
@@ -64,6 +82,7 @@ const VaultSelector = ({
       showExpandedContent={!!vaults}
       hasError={hasError}
       validationError={validationError}
+      disabled={isDisabled}
     >
       <SearchableList
         searchQuery={searchQuery}

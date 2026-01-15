@@ -28,6 +28,9 @@ export const AmountSelector = ({
   hasError = false,
   validationError,
 }: AmountSelectorProps) => {
+  // Disabled when: No asset selected OR no from-vault selected
+  const isDisabled = !selectedAsset || !selectedVault
+
   // Get all calculations (fee, balances, max amount, etc.)
   // Note: currentAmount is calculated internally, we pass the external amount
   const { fee, feeError, balanceError, availableBalance, formattedFee, maxAmount, isMaxAmount } =
@@ -49,12 +52,15 @@ export const AmountSelector = ({
     })
 
   // Get balance display logic
+  // When disabled, show "--" instead of actual balance
   const { hasInputError, displayText } = useBalanceDisplay({
-    balanceError,
-    insufficientBalance,
-    totalNeeded,
-    availableBalance,
-    selectedAsset,
+    balanceError: isDisabled ? null : balanceError,
+    insufficientBalance: isDisabled ? null : insufficientBalance,
+    totalNeeded: isDisabled ? null : totalNeeded,
+    availableBalance: isDisabled
+      ? { balance: BigInt(0), usdValue: 0, formatted: '' }
+      : availableBalance,
+    selectedAsset: isDisabled ? null : selectedAsset,
   })
 
   const handleMaxClick = () => {
@@ -81,8 +87,9 @@ export const AmountSelector = ({
                 hasError={hasError || hasInputError}
                 hasValue={hasValue}
                 selectedAsset={selectedAsset}
+                disabled={isDisabled}
               />
-              <MaxButton onClick={handleMaxClick} isMaxAmount={isMaxAmount} />
+              <MaxButton onClick={handleMaxClick} isMaxAmount={isMaxAmount} disabled={isDisabled} />
             </div>
           </FormField>
 
@@ -92,9 +99,9 @@ export const AmountSelector = ({
             <div className="my-2 h-[1px] w-full bg-blue-5-transparency-30" />
 
             <FeeDisplay
-              formattedFee={formattedFee}
-              selectedAsset={selectedAsset}
-              feeError={feeError}
+              formattedFee={isDisabled ? null : formattedFee}
+              selectedAsset={isDisabled ? null : selectedAsset}
+              feeError={isDisabled ? null : feeError}
             />
           </div>
         </div>
