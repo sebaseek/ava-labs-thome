@@ -1,6 +1,6 @@
 import { simulateApiRequest } from './utils'
 
-interface Address {
+export interface Address {
   address: string
   name: string
   isExternal: boolean

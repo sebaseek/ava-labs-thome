@@ -1,4 +1,4 @@
-import { AmountSelector, AssetSelector, Typography, VaultSelector } from '@/components'
+import { AmountSelector, AssetSelector, Typography, ToVaultSelector, VaultSelector } from '@/components'
 
 export const Transfer = () => {
   return (
@@ -25,6 +25,8 @@ export const Transfer = () => {
             <AssetSelector />
             {/* Vault Selector */}
             <VaultSelector />
+            {/* To Vault Selector */}
+            <ToVaultSelector />
             {/* Amount Selector */}
             <AmountSelector />
           </div>
