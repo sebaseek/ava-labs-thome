@@ -24,6 +24,11 @@ export const Transfer = () => {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
   // Track which fields have been touched/edited after submit attempt
   const [touchedFields, setTouchedFields] = useState<Set<keyof TransferFormInputValues>>(new Set())
+  // Track submission errors from API (e.g., insufficient balance)
+  const [submissionError, setSubmissionError] = useState<{
+    field?: string
+    message: string
+  } | null>(null)
 
   // Form manages all form state including selections
   const form = useForm({
@@ -79,6 +84,7 @@ export const Transfer = () => {
       setTransferCompleted,
       setHasAttemptedSubmit,
       setTouchedFields: (fields) => setTouchedFields(fields as Set<keyof TransferFormInputValues>),
+      setSubmissionError: () => setSubmissionError(null),
     },
   })
 
@@ -114,6 +120,7 @@ export const Transfer = () => {
 
   const handleSubmitTransfer = async () => {
     setHasAttemptedSubmit(true)
+    setSubmissionError(null) // Clear any previous submission errors
 
     // Validate form using Zod schema - validation reads from form state
     const result = validateForm()
@@ -153,10 +160,24 @@ export const Transfer = () => {
       // The submitTransfer function throws TransferValidationError for validation issues
       // and other errors for network/API issues
       console.error('Transfer submission failed:', error)
-      // For now, we'll still show the success screen even if there's an error
-      // In a real app, you'd want to show an error message to the user
-      // TODO: Add error handling UI to show submission errors to the user
-      setTransferCompleted(true)
+
+      // Check if it's a TransferValidationError with a field
+      if (error instanceof Error && error.name === 'TransferValidationError') {
+        const validationError = error as { field?: string; message: string }
+        setSubmissionError({
+          field: validationError.field,
+          message: validationError.message,
+        })
+      } else {
+        // Generic error
+        setSubmissionError({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Transfer submission failed. Please try again.',
+        })
+      }
+      // Don't navigate to success screen on error
     }
   }
 
@@ -211,10 +232,17 @@ export const Transfer = () => {
                       setSelectedAsset={(asset) => {
                         field.handleChange(asset)
                         markFieldTouched('asset')
+                        if (submissionError?.field === 'assetId') {
+                          setSubmissionError(null)
+                        }
                       }}
                       onFieldClick={() => handleStepClick(0)}
-                      hasError={assetError}
-                      validationError={assetErrorMessage}
+                      hasError={assetError || submissionError?.field === 'assetId'}
+                      validationError={
+                        submissionError?.field === 'assetId'
+                          ? submissionError.message
+                          : assetErrorMessage
+                      }
                     />
                   )}
                 </form.Field>
@@ -226,11 +254,18 @@ export const Transfer = () => {
                       setSelectedVault={(vault) => {
                         field.handleChange(vault)
                         markFieldTouched('vault')
+                        if (submissionError?.field === 'vaultId') {
+                          setSubmissionError(null)
+                        }
                       }}
                       selectedAsset={formValues.asset}
                       onFieldClick={() => handleStepClick(1)}
-                      hasError={vaultError}
-                      validationError={vaultErrorMessage}
+                      hasError={vaultError || submissionError?.field === 'vaultId'}
+                      validationError={
+                        submissionError?.field === 'vaultId'
+                          ? submissionError.message
+                          : vaultErrorMessage
+                      }
                     />
                   )}
                 </form.Field>
@@ -243,11 +278,18 @@ export const Transfer = () => {
                       setSelectedAddress={(address) => {
                         field.handleChange(address)
                         markFieldTouched('toAddress')
+                        if (submissionError?.field === 'to') {
+                          setSubmissionError(null)
+                        }
                       }}
                       selectedVault={formValues.vault}
                       onFieldClick={() => handleStepClick(2)}
-                      hasError={toAddressError}
-                      validationError={toAddressErrorMessage}
+                      hasError={toAddressError || submissionError?.field === 'to'}
+                      validationError={
+                        submissionError?.field === 'to'
+                          ? submissionError.message
+                          : toAddressErrorMessage
+                      }
                     />
                   )}
                 </form.Field>
@@ -261,10 +303,18 @@ export const Transfer = () => {
                       setAmount={(value) => {
                         field.handleChange(value)
                         markFieldTouched('amount')
+                        // Clear submission error when user edits amount
+                        if (submissionError?.field === 'amount') {
+                          setSubmissionError(null)
+                        }
                       }}
                       onFieldClick={() => handleStepClick(3)}
-                      hasError={amountError}
-                      validationError={amountErrorMessage}
+                      hasError={amountError || submissionError?.field === 'amount'}
+                      validationError={
+                        submissionError?.field === 'amount'
+                          ? submissionError.message
+                          : amountErrorMessage
+                      }
                     />
                   )}
                 </form.Field>
@@ -276,13 +326,28 @@ export const Transfer = () => {
                       onChange={(value) => {
                         field.handleChange(value)
                         markFieldTouched('memo')
+                        if (submissionError?.field === 'memo') {
+                          setSubmissionError(null)
+                        }
                       }}
                       onFieldClick={() => handleStepClick(4)}
-                      hasError={memoError}
-                      validationError={memoErrorMessage}
+                      hasError={memoError || submissionError?.field === 'memo'}
+                      validationError={
+                        submissionError?.field === 'memo'
+                          ? submissionError.message
+                          : memoErrorMessage
+                      }
                     />
                   )}
                 </form.Field>
+                {/* General Error Message (for non-field-specific errors) */}
+                {submissionError && !submissionError.field && (
+                  <div className="rounded-lg border border-red-highlight-1 bg-red-highlight-1-transparency-10 p-4">
+                    <p className="text-sm font-medium leading-[120%] text-red-highlight-1">
+                      {submissionError.message}
+                    </p>
+                  </div>
+                )}
                 {/* Navigation Control */}
                 <NavigationControl
                   onStartOver={handleStartOver}

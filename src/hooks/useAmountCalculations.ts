@@ -6,13 +6,14 @@ import { fetchFee } from '@/api/fee'
 import { fetchBalancesForVault } from '@/api/vault-balances'
 import type { Vault } from '@/api/vaults'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
-import { calculateTotalBalance, formatBalance } from '@/utils/balance'
+import { formatBalance } from '@/utils/balance'
 
 interface UseAmountCalculationsOptions {
   selectedAsset: Asset | null
   selectedVault: Vault | null
   currentAmount: string
   setAmount?: (value: string) => void
+  accountIndex?: number // Account index to use for balance calculation (defaults to 0)
 }
 
 interface UseAmountCalculationsReturn {
@@ -42,6 +43,7 @@ export const useAmountCalculations = ({
   selectedVault,
   currentAmount,
   setAmount,
+  accountIndex = 0, // Default to account 0 (matches submitTransfer default)
 }: UseAmountCalculationsOptions): UseAmountCalculationsReturn => {
   const { data: fee, error: feeError } = useQuery({
     queryKey: ['fee', selectedAsset?.id],
@@ -67,12 +69,15 @@ export const useAmountCalculations = ({
       return { balance: BigInt(0), usdValue: 0, formatted: '0' }
     }
 
-    const totalBalance = calculateTotalBalance({ [selectedVault.id]: vaultBalances })
-    const formatted = formatBalance(totalBalance, selectedAsset.decimals)
-    const usdValue = calculateUSDValue(totalBalance, selectedAsset)
+    // Use the specified account index balance (defaults to 0, same account used for transfer submission)
+    // This matches the validation in submit-transfer.ts which checks the specified accountIndex
+    const accountBalance = vaultBalances.find((account) => account.accountIndex === accountIndex)
+    const balance = accountBalance ? BigInt(accountBalance.balance) : BigInt(0)
+    const formatted = formatBalance(balance, selectedAsset.decimals)
+    const usdValue = calculateUSDValue(balance, selectedAsset)
 
-    return { balance: totalBalance, usdValue, formatted }
-  }, [selectedAsset, selectedVault, vaultBalances])
+    return { balance, usdValue, formatted }
+  }, [selectedAsset, selectedVault, vaultBalances, accountIndex])
 
   const formattedFee = useMemo(() => {
     if (!fee || !selectedAsset) return ''

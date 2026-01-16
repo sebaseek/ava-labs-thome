@@ -9,6 +9,7 @@ interface UseFormResetOptions {
     setTransferCompleted: (completed: boolean) => void
     setHasAttemptedSubmit: (attempted: boolean) => void
     setTouchedFields?: (fields: Set<string> | Set<keyof any>) => void
+    setSubmissionError?: () => void
   }
 }
 
@@ -30,6 +31,7 @@ export const useFormReset = ({ form, setters }: UseFormResetOptions) => {
     setters.setTransferCompleted(false)
     setters.setHasAttemptedSubmit(false)
     setters.setTouchedFields?.(new Set())
+    setters.setSubmissionError?.()
   }, [form, setters])
 
   return { resetForm }
