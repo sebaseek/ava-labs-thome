@@ -13,6 +13,7 @@ import {
   Typography,
   VaultSelector,
 } from '@/components'
+import { TransferFormSkeleton } from '@/components/TransferFormSkeleton'
 import { useFormReset } from '@/hooks/useFormReset'
 import { useStepNavigation } from '@/hooks/useStepNavigation'
 import { useTransferFormValidation } from '@/hooks/useTransferFormValidation'
@@ -22,6 +23,7 @@ import { transferFormSchema } from '@/schemas/transfer'
 export const Transfer = () => {
   const [transferCompleted, setTransferCompleted] = useState(false)
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   // Track which fields have been touched/edited after submit attempt
   const [touchedFields, setTouchedFields] = useState<Set<keyof TransferFormInputValues>>(new Set())
   // Track submission errors from API (e.g., insufficient balance)
@@ -119,26 +121,30 @@ export const Transfer = () => {
   }
 
   const handleSubmitTransfer = async () => {
+    // Prevent double submission
+    if (isSubmitting) return
+
     setHasAttemptedSubmit(true)
     setSubmissionError(null) // Clear any previous submission errors
-
-    // Validate form using Zod schema - validation reads from form state
-    const result = validateForm()
-
-    if (!result.success) {
-      // Validation failed - errors will be shown via hasError props
-      return
-    }
-
-    // All form fields are validated, so we can safely access them
-    const { asset, vault, toAddress, amount, memo } = formValues
-
-    if (!asset || !vault || !toAddress) {
-      // This shouldn't happen if validation passed, but TypeScript needs this check
-      return
-    }
+    setIsSubmitting(true)
 
     try {
+      // Validate form using Zod schema - validation reads from form state
+      const result = validateForm()
+
+      if (!result.success) {
+        // Validation failed - errors will be shown via hasError props
+        return
+      }
+
+      // All form fields are validated, so we can safely access them
+      const { asset, vault, toAddress, amount, memo } = formValues
+
+      if (!asset || !vault || !toAddress) {
+        // This shouldn't happen if validation passed, but TypeScript needs this check
+        return
+      }
+
       // Convert amount from human-readable format (e.g., "100.50") to smallest units (e.g., "100500000000000000000")
       const amountWithoutCommas = amount.replace(/,/g, '')
       const amountInSmallestUnits = parseUnits(amountWithoutCommas, asset.decimals)
@@ -186,6 +192,8 @@ export const Transfer = () => {
         })
       }
       // Don't navigate to success screen on error
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -230,138 +238,143 @@ export const Transfer = () => {
                 <Stepper activeStep={activeStep} />
               </div>
 
-              {/* Right Column - Form Fields */}
-              <div className="w-full space-y-4">
-                {/* Asset Selector */}
-                <form.Field name="asset">
-                  {(field) => (
-                    <AssetSelector
-                      selectedAsset={field.state.value}
-                      setSelectedAsset={(asset) => {
-                        field.handleChange(asset)
-                        markFieldTouched('asset')
-                        if (submissionError?.field === 'assetId') {
-                          setSubmissionError(null)
+              {/* Right Column - Form Fields or Skeleton */}
+              {isSubmitting ? (
+                <TransferFormSkeleton />
+              ) : (
+                <div className="w-full space-y-4">
+                  {/* Asset Selector */}
+                  <form.Field name="asset">
+                    {(field) => (
+                      <AssetSelector
+                        selectedAsset={field.state.value}
+                        setSelectedAsset={(asset) => {
+                          field.handleChange(asset)
+                          markFieldTouched('asset')
+                          if (submissionError?.field === 'assetId') {
+                            setSubmissionError(null)
+                          }
+                        }}
+                        onFieldClick={() => handleStepClick(0)}
+                        hasError={assetError || submissionError?.field === 'assetId'}
+                        validationError={
+                          submissionError?.field === 'assetId'
+                            ? submissionError.message
+                            : assetErrorMessage
                         }
-                      }}
-                      onFieldClick={() => handleStepClick(0)}
-                      hasError={assetError || submissionError?.field === 'assetId'}
-                      validationError={
-                        submissionError?.field === 'assetId'
-                          ? submissionError.message
-                          : assetErrorMessage
-                      }
-                    />
-                  )}
-                </form.Field>
-                {/* Vault Selector */}
-                <form.Field name="vault">
-                  {(field) => (
-                    <VaultSelector
-                      selectedVault={field.state.value}
-                      setSelectedVault={(vault) => {
-                        field.handleChange(vault)
-                        markFieldTouched('vault')
-                        if (submissionError?.field === 'vaultId') {
-                          setSubmissionError(null)
+                      />
+                    )}
+                  </form.Field>
+                  {/* Vault Selector */}
+                  <form.Field name="vault">
+                    {(field) => (
+                      <VaultSelector
+                        selectedVault={field.state.value}
+                        setSelectedVault={(vault) => {
+                          field.handleChange(vault)
+                          markFieldTouched('vault')
+                          if (submissionError?.field === 'vaultId') {
+                            setSubmissionError(null)
+                          }
+                        }}
+                        selectedAsset={formValues.asset}
+                        onFieldClick={() => handleStepClick(1)}
+                        hasError={vaultError || submissionError?.field === 'vaultId'}
+                        validationError={
+                          submissionError?.field === 'vaultId'
+                            ? submissionError.message
+                            : vaultErrorMessage
                         }
-                      }}
-                      selectedAsset={formValues.asset}
-                      onFieldClick={() => handleStepClick(1)}
-                      hasError={vaultError || submissionError?.field === 'vaultId'}
-                      validationError={
-                        submissionError?.field === 'vaultId'
-                          ? submissionError.message
-                          : vaultErrorMessage
-                      }
-                    />
-                  )}
-                </form.Field>
-                {/* To Vault Selector */}
-                <form.Field name="toAddress">
-                  {(field) => (
-                    <ToVaultSelector
-                      selectedAsset={formValues.asset}
-                      selectedAddress={field.state.value}
-                      setSelectedAddress={(address) => {
-                        field.handleChange(address)
-                        markFieldTouched('toAddress')
-                        if (submissionError?.field === 'to') {
-                          setSubmissionError(null)
+                      />
+                    )}
+                  </form.Field>
+                  {/* To Vault Selector */}
+                  <form.Field name="toAddress">
+                    {(field) => (
+                      <ToVaultSelector
+                        selectedAsset={formValues.asset}
+                        selectedAddress={field.state.value}
+                        setSelectedAddress={(address) => {
+                          field.handleChange(address)
+                          markFieldTouched('toAddress')
+                          if (submissionError?.field === 'to') {
+                            setSubmissionError(null)
+                          }
+                        }}
+                        selectedVault={formValues.vault}
+                        onFieldClick={() => handleStepClick(2)}
+                        hasError={toAddressError || submissionError?.field === 'to'}
+                        validationError={
+                          submissionError?.field === 'to'
+                            ? submissionError.message
+                            : toAddressErrorMessage
                         }
-                      }}
-                      selectedVault={formValues.vault}
-                      onFieldClick={() => handleStepClick(2)}
-                      hasError={toAddressError || submissionError?.field === 'to'}
-                      validationError={
-                        submissionError?.field === 'to'
-                          ? submissionError.message
-                          : toAddressErrorMessage
-                      }
-                    />
-                  )}
-                </form.Field>
-                {/* Amount Selector */}
-                <form.Field name="amount">
-                  {(field) => (
-                    <AmountSelector
-                      selectedAsset={formValues.asset}
-                      selectedVault={formValues.vault}
-                      amount={field.state.value}
-                      setAmount={(value) => {
-                        field.handleChange(value)
-                        markFieldTouched('amount')
-                        // Clear submission error when user edits amount
-                        if (submissionError?.field === 'amount') {
-                          setSubmissionError(null)
+                      />
+                    )}
+                  </form.Field>
+                  {/* Amount Selector */}
+                  <form.Field name="amount">
+                    {(field) => (
+                      <AmountSelector
+                        selectedAsset={formValues.asset}
+                        selectedVault={formValues.vault}
+                        amount={field.state.value}
+                        setAmount={(value) => {
+                          field.handleChange(value)
+                          markFieldTouched('amount')
+                          // Clear submission error when user edits amount
+                          if (submissionError?.field === 'amount') {
+                            setSubmissionError(null)
+                          }
+                        }}
+                        onFieldClick={() => handleStepClick(3)}
+                        hasError={amountError || submissionError?.field === 'amount'}
+                        validationError={
+                          submissionError?.field === 'amount'
+                            ? submissionError.message
+                            : amountErrorMessage
                         }
-                      }}
-                      onFieldClick={() => handleStepClick(3)}
-                      hasError={amountError || submissionError?.field === 'amount'}
-                      validationError={
-                        submissionError?.field === 'amount'
-                          ? submissionError.message
-                          : amountErrorMessage
-                      }
-                    />
-                  )}
-                </form.Field>
-                {/* Memo */}
-                <form.Field name="memo">
-                  {(field) => (
-                    <Memo
-                      value={field.state.value}
-                      onChange={(value) => {
-                        field.handleChange(value)
-                        markFieldTouched('memo')
-                        if (submissionError?.field === 'memo') {
-                          setSubmissionError(null)
+                      />
+                    )}
+                  </form.Field>
+                  {/* Memo */}
+                  <form.Field name="memo">
+                    {(field) => (
+                      <Memo
+                        value={field.state.value}
+                        onChange={(value) => {
+                          field.handleChange(value)
+                          markFieldTouched('memo')
+                          if (submissionError?.field === 'memo') {
+                            setSubmissionError(null)
+                          }
+                        }}
+                        onFieldClick={() => handleStepClick(4)}
+                        hasError={memoError || submissionError?.field === 'memo'}
+                        validationError={
+                          submissionError?.field === 'memo'
+                            ? submissionError.message
+                            : memoErrorMessage
                         }
-                      }}
-                      onFieldClick={() => handleStepClick(4)}
-                      hasError={memoError || submissionError?.field === 'memo'}
-                      validationError={
-                        submissionError?.field === 'memo'
-                          ? submissionError.message
-                          : memoErrorMessage
-                      }
-                    />
+                      />
+                    )}
+                  </form.Field>
+                  {/* General Error Message (for non-field-specific errors) */}
+                  {submissionError && !submissionError.field && (
+                    <div className="rounded-lg border border-red-highlight-1 bg-red-highlight-1-transparency-10 p-4">
+                      <p className="text-sm font-medium leading-[120%] text-red-highlight-1">
+                        {submissionError.message}
+                      </p>
+                    </div>
                   )}
-                </form.Field>
-                {/* General Error Message (for non-field-specific errors) */}
-                {submissionError && !submissionError.field && (
-                  <div className="rounded-lg border border-red-highlight-1 bg-red-highlight-1-transparency-10 p-4">
-                    <p className="text-sm font-medium leading-[120%] text-red-highlight-1">
-                      {submissionError.message}
-                    </p>
-                  </div>
-                )}
-                {/* Navigation Control */}
-                <NavigationControl
-                  onStartOver={handleStartOver}
-                  onSubmitTransfer={handleSubmitTransfer}
-                />
-              </div>
+                  {/* Navigation Control */}
+                  <NavigationControl
+                    onStartOver={handleStartOver}
+                    onSubmitTransfer={handleSubmitTransfer}
+                    isSubmitting={isSubmitting}
+                  />
+                </div>
+              )}
             </div>
           </>
         )}
