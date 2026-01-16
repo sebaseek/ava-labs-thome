@@ -10,12 +10,39 @@ describe('NavigationControl', () => {
     expect(screen.getByRole('button', { name: /Submit Transfer/i })).toBeInTheDocument()
   })
 
-  it('calls onStartOver when Start Over is clicked', async () => {
+  it('opens confirmation modal when Start Over is clicked', async () => {
     const user = userEvent.setup()
     const handleStartOver = vi.fn()
     render(<NavigationControl onStartOver={handleStartOver} onSubmitTransfer={() => {}} />)
     await user.click(screen.getByRole('button', { name: /Start Over/i }))
+    // Modal should open with confirmation dialog
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/Start over\?/)).toBeInTheDocument()
+  })
+
+  it('calls onStartOver when confirmed in modal', async () => {
+    const user = userEvent.setup()
+    const handleStartOver = vi.fn()
+    render(<NavigationControl onStartOver={handleStartOver} onSubmitTransfer={() => {}} />)
+    // Open modal
+    await user.click(screen.getByRole('button', { name: /Start Over/i }))
+    // Confirm in modal
+    await user.click(screen.getByRole('button', { name: /Yes, start over/i }))
     expect(handleStartOver).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes modal when Go back is clicked', async () => {
+    const user = userEvent.setup()
+    const handleStartOver = vi.fn()
+    render(<NavigationControl onStartOver={handleStartOver} onSubmitTransfer={() => {}} />)
+    // Open modal
+    await user.click(screen.getByRole('button', { name: /Start Over/i }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    // Click Go back
+    await user.click(screen.getByRole('button', { name: /Go back/i }))
+    // Modal should close, onStartOver should not be called
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(handleStartOver).not.toHaveBeenCalled()
   })
 
   it('calls onSubmitTransfer when Submit Transfer is clicked', async () => {

@@ -18,14 +18,20 @@ test.describe('Navigation and Controls', () => {
     await expect(submitButton).toBeEnabled()
   })
 
-  test('should reset form when Start Over is clicked', async ({ page }) => {
+  test('should reset form when Start Over is clicked and confirmed', async ({ page }) => {
     // Fill memo field
     const memoInput = page.getByPlaceholder(/enter a memo/i)
     await memoInput.fill('Test memo')
     await expect(memoInput).toHaveValue('Test memo')
     
-    // Click Start Over
+    // Click Start Over to open confirmation modal
     await page.getByRole('button', { name: /start over/i }).click()
+    
+    // Modal should be visible
+    await expect(page.getByText(/Start over\?/)).toBeVisible()
+    
+    // Confirm by clicking "Yes, start over"
+    await page.getByRole('button', { name: /Yes, start over/i }).click()
     
     // Memo should be cleared
     await expect(memoInput).toHaveValue('')
@@ -57,7 +63,9 @@ test.describe('Navigation and Controls', () => {
       await memoInput.fill(`Memo ${i}`)
       await expect(memoInput).toHaveValue(`Memo ${i}`)
       
+      // Open modal and confirm
       await page.getByRole('button', { name: /start over/i }).click()
+      await page.getByRole('button', { name: /yes, start over/i }).click()
       await expect(memoInput).toHaveValue('')
     }
   })

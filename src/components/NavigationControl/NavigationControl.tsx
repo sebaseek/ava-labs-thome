@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui'
 import { StartOverModal } from '@/components/StartOverModal'
+import { Button } from '@/components/ui'
 
 interface NavigationControlProps {
   onStartOver: () => void
@@ -26,11 +26,7 @@ export const NavigationControl = ({ onStartOver, onSubmitTransfer }: NavigationC
           Submit Transfer
         </Button>
       </div>
-      <StartOverModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onConfirm={onStartOver}
-      />
+      <StartOverModal open={isModalOpen} onOpenChange={setIsModalOpen} onConfirm={onStartOver} />
     </>
   )
 }
