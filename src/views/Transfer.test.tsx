@@ -27,9 +27,26 @@ vi.mock('@/hooks/useTransferFormValidation', () => ({
     vaultError: false,
     toAddressError: false,
     amountError: false,
+    memoError: false,
+    assetErrorMessage: null,
+    vaultErrorMessage: null,
+    toAddressErrorMessage: null,
+    amountErrorMessage: null,
+    memoErrorMessage: null,
     fieldErrors: {},
     validateForm: vi.fn(() => ({ success: false })),
   })),
+}))
+
+vi.mock('@/api/submit-transfer', () => ({
+  submitTransfer: vi.fn(() =>
+    Promise.resolve({
+      transactionId: 'test-tx-id',
+      status: 'pending' as const,
+      timestamp: Date.now(),
+      estimatedConfirmationTime: 120,
+    }),
+  ),
 }))
 
 const createTestQueryClient = () =>
@@ -94,5 +111,19 @@ describe('Transfer', () => {
     // The actual navigation is tested via integration tests or E2E tests
     renderWithProviders(<Transfer />)
     expect(screen.getByText('Transfer')).toBeInTheDocument()
+  })
+
+  it('does not call submitTransfer when validation fails', async () => {
+    const { submitTransfer } = await import('@/api/submit-transfer')
+    const user = userEvent.setup()
+    renderWithProviders(<Transfer />)
+
+    const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
+    await user.click(submitButton)
+
+    // submitTransfer should not be called when validation fails
+    await waitFor(() => {
+      expect(submitTransfer).not.toHaveBeenCalled()
+    })
   })
 })
