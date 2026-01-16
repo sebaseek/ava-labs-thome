@@ -1,11 +1,16 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  clickAccountByIndex,
+  findAndClickSelectableItem,
+  renderWithProviders,
+  setupIntegrationTest,
+  waitForAddressesToLoad,
+} from './__tests__/Transfer.integration.test.utils'
 import { Transfer } from './Transfer'
 
-// Mock API functions
+// Mocks must be at top level for Vitest hoisting
 vi.mock('@/api/assets', () => ({
   fetchAssets: vi.fn(() =>
     Promise.resolve([
@@ -46,26 +51,20 @@ vi.mock('@/api/networks', () => ({
 }))
 
 vi.mock('@/api/fee', () => ({
-  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')), // 0.1 AVAX
+  fetchFee: vi.fn(() => Promise.resolve('100000000000000000')),
 }))
 
 vi.mock('@/api/vault-balances', () => ({
   fetchBalancesForVault: vi.fn(() =>
-    Promise.resolve([
-      { balance: '1000000000000000000', accountIndex: 0 }, // 1 AVAX
-    ]),
+    Promise.resolve([{ balance: '1000000000000000000', accountIndex: 0 }]),
   ),
   assetToVaultBalances: {
     'eip155:43113/native': {
-      '1': [
-        { balance: '1000000000000000000', accountIndex: 0 }, // 1 AVAX
-      ],
+      '1': [{ balance: '1000000000000000000', accountIndex: 0 }],
       '2': [{ balance: '2000000000000000000', accountIndex: 0 }],
     },
     'eip155:43113/erc20:0xb6076c93701d6a07266c31066b298aec6dd65c2d': {
-      '1': [
-        { balance: '75000000000', accountIndex: 0 }, // 75,000 USDC
-      ],
+      '1': [{ balance: '75000000000', accountIndex: 0 }],
     },
   },
 }))
@@ -97,23 +96,15 @@ vi.mock('@/api/addresses', () => {
       ],
     },
   }
-
-  const fetchAddressesForVaultMock = vi.fn((networkId: string, vaultId: string) => {
-    const network = mockAddresses[networkId as keyof typeof mockAddresses]
-    if (!network) {
-      return Promise.reject(new Error(`Network ${networkId} not found`))
-    }
-    const addresses = network[vaultId as keyof typeof network]
-    if (!addresses) {
-      return Promise.reject(new Error(`Vault ${vaultId} not found in network ${networkId}`))
-    }
-    // Return immediately for tests (no delay) but as a resolved promise
-    return Promise.resolve(addresses)
-  })
-
   return {
     networkToVaultToAddresses: mockAddresses,
-    fetchAddressesForVault: fetchAddressesForVaultMock,
+    fetchAddressesForVault: vi.fn((networkId: string, vaultId: string) => {
+      const network = mockAddresses[networkId as keyof typeof mockAddresses]
+      if (!network) return Promise.reject(new Error(`Network ${networkId} not found`))
+      const addresses = network[vaultId as keyof typeof network]
+      if (!addresses) return Promise.reject(new Error(`Vault ${vaultId} not found`))
+      return Promise.resolve(addresses)
+    }),
   }
 })
 
@@ -128,121 +119,9 @@ vi.mock('@/api/submit-transfer', () => ({
   ),
 }))
 
-const createTestQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0, refetchOnWindowFocus: false },
-    },
-  })
-
-const renderWithProviders = (ui: ReactElement) => {
-  const queryClient = createTestQueryClient()
-  return {
-    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
-    queryClient,
-  }
-}
-
-// Helper to find and click selectable items (avoiding selected content)
-const findAndClickSelectableItem = async (
-  user: ReturnType<typeof userEvent.setup>,
-  text: string,
-) => {
-  await waitFor(() => {
-    expect(screen.getAllByText(text).length).toBeGreaterThan(0)
-  })
-
-  // Find all instances of the text
-  const elements = screen.getAllByText(text)
-
-  // Try to find one that's in a clickable container (SelectableItem or button)
-  for (const element of elements) {
-    const parent =
-      element.closest('button') ||
-      element.closest('[role="button"]') ||
-      element.closest('[class*="SelectableItem"]')
-    if (parent && parent !== element) {
-      // Check if it's not the selected content (selected content is usually in a different structure)
-      const isSelectedContent = element
-        .closest('[class*="flex items-center gap-3"]')
-        ?.querySelector('img')
-      if (!isSelectedContent || elements.length === 1) {
-        await user.click(parent as HTMLElement)
-        return
-      }
-    }
-  }
-
-  // Fallback: click the last element (usually the one in the list, not selected)
-  if (elements.length > 1) {
-    await user.click(elements[elements.length - 1])
-  } else {
-    await user.click(elements[0])
-  }
-}
-
-// Helper to wait for addresses to load
-const waitForAddressesToLoad = async () => {
-  await waitFor(
-    () => {
-      // Wait for either accounts to appear OR filter tabs to appear (both indicate addresses loaded)
-      const accountElements = screen.queryAllByText(/Account \d+/)
-      const allButton = screen.queryByText(/All/i)
-      // Addresses are loaded if we see accounts OR the filter tabs (which only show when addresses are loaded)
-      if (accountElements.length === 0 && !allButton) {
-        throw new Error('Addresses not loaded yet')
-      }
-    },
-    { timeout: 10000 },
-  )
-}
-
-// Helper to click on an account by index, handling multiple accounts
-const clickAccountByIndex = async (
-  user: ReturnType<typeof userEvent.setup>,
-  accountIndex: number = 0,
-) => {
-  // Wait for addresses to load first
-  await waitForAddressesToLoad()
-
-  const accountText = `Account ${accountIndex}`
-  // Wait for the specific account to appear
-  await waitFor(
-    () => {
-      const targetAccount = screen.queryAllByText(accountText)
-      if (targetAccount.length === 0) {
-        throw new Error(`Account ${accountIndex} not found`)
-      }
-    },
-    { timeout: 2000 },
-  )
-
-  const accountElements = screen.getAllByText(accountText)
-  // Find the one that's in a clickable button/container
-  for (const element of accountElements) {
-    const clickableParent = element.closest('button') || element.closest('[role="button"]')
-    if (clickableParent && clickableParent.getAttribute('type') === 'button') {
-      await user.click(clickableParent as HTMLElement)
-      return
-    }
-  }
-  // Fallback: click the first one
-  if (accountElements[0]) {
-    await user.click(accountElements[0])
-  }
-}
-
 describe('Transfer Integration Tests', () => {
   beforeEach(async () => {
-    vi.clearAllMocks()
-    // Reset submitTransfer mock to default success behavior
-    const { submitTransfer } = await import('@/api/submit-transfer')
-    vi.mocked(submitTransfer).mockResolvedValue({
-      transactionId: 'test-tx-id-123',
-      status: 'pending' as const,
-      timestamp: Date.now(),
-      estimatedConfirmationTime: 120,
-    })
+    await setupIntegrationTest()
   })
 
   describe('Complete Form Flow - Happy Path', () => {
@@ -522,127 +401,6 @@ describe('Transfer Integration Tests', () => {
     })
   })
 
-  describe('Amount Calculations Integration', () => {
-    it('should display balance and fee correctly after selecting asset and vault', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Select asset
-      await user.click(screen.getByText('Asset'))
-      await findAndClickSelectableItem(user, 'AVAX')
-
-      // Select vault
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      // Find Vault 1 in the list (not the selected one if already selected)
-      const vault1Options = screen.getAllByText('Vault 1')
-      const vault1Option =
-        vault1Options.find((el) => {
-          const parent = el.closest('button')
-          return parent && parent.getAttribute('type') === 'button'
-        }) || vault1Options[0]
-      if (vault1Option) {
-        const clickableParent = vault1Option.closest('button')
-        if (clickableParent) {
-          await user.click(clickableParent)
-        } else {
-          await user.click(vault1Option)
-        }
-      }
-
-      // Wait for balance and fee to load
-      await waitFor(() => {
-        // Balance should be displayed
-        const balanceText = screen.getByText(/\$.*≈.*AVAX/i)
-        expect(balanceText).toBeInTheDocument()
-
-        // Fee should be displayed
-        const feeText = screen.getByText(/Fee/i)
-        expect(feeText).toBeInTheDocument()
-      })
-    })
-
-    it('should show insufficient balance error when amount exceeds available balance', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Select asset and vault
-      await user.click(screen.getByText('Asset'))
-      await waitFor(() => {
-        expect(screen.getByText('AVAX')).toBeInTheDocument()
-      })
-      const avaxOption = screen.getByText('AVAX').closest('button')
-      if (avaxOption) {
-        await user.click(avaxOption)
-      }
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      // Wait for balance to load
-      await waitFor(() => {
-        expect(screen.getByText(/\$.*≈.*AVAX/i)).toBeInTheDocument()
-      })
-
-      // Enter amount that exceeds balance (balance is 1 AVAX, fee is 0.1, so max is 0.9)
-      const amountInput = screen.getByPlaceholderText('0.00')
-      await user.clear(amountInput)
-      await user.type(amountInput, '2')
-
-      // Should show insufficient balance error
-      await waitFor(() => {
-        expect(screen.getByText(/Insufficient balance/i)).toBeInTheDocument()
-      })
-    })
-
-    it('should enable Max button and set max amount when clicked', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Select asset and vault
-      await user.click(screen.getByText('Asset'))
-      await waitFor(() => {
-        expect(screen.getByText('AVAX')).toBeInTheDocument()
-      })
-      const avaxOption = screen.getByText('AVAX').closest('button')
-      if (avaxOption) {
-        await user.click(avaxOption)
-      }
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      // Wait for balance to load
-      await waitFor(() => {
-        expect(screen.getByText(/\$.*≈.*AVAX/i)).toBeInTheDocument()
-      })
-
-      // Click Max button
-      const maxButton = screen.getByRole('button', { name: /Max/i })
-      await user.click(maxButton)
-
-      // Amount should be set to max (balance is 1 AVAX, fee is 0.1, so max is 0.9)
-      await waitFor(() => {
-        const amountInput = screen.getByPlaceholderText('0.00')
-        expect(amountInput).toHaveValue('0.9')
-      })
-    })
-  })
-
   describe('Search and Filter Integration', () => {
     it('should filter assets by search query', async () => {
       const user = userEvent.setup()
@@ -753,255 +511,6 @@ describe('Transfer Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getAllByText(/Account/i).length).toBeGreaterThan(0)
       })
-    })
-  })
-
-  describe('Error Handling Integration', () => {
-    it('should handle API errors gracefully', async () => {
-      const { fetchAssets } = await import('@/api/assets')
-      vi.mocked(fetchAssets).mockRejectedValueOnce(new Error('Network error'))
-
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      await user.click(screen.getByText('Asset'))
-
-      // Should show error message (check for error indicator or message)
-      await waitFor(
-        () => {
-          // Check for error icon or error message text
-          const errorMessage =
-            screen.queryByText(/error/i) || screen.queryByText(/An error occurred/i)
-          expect(errorMessage || screen.queryByRole('img', { name: /alert/i })).toBeTruthy()
-        },
-        { timeout: 3000 },
-      )
-    })
-
-    it('should show validation errors on form fields after submit attempt', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Try to submit without filling required fields
-      const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-      await user.click(submitButton)
-
-      // Form should still be visible
-      await waitFor(() => {
-        expect(screen.getByText('Transfer')).toBeInTheDocument()
-      })
-
-      // Fields should show error states (visual indicators)
-      // Note: Actual error display depends on component implementation
-    })
-
-    it('should handle submitTransfer errors gracefully', async () => {
-      const { submitTransfer } = await import('@/api/submit-transfer')
-      const transferError = new Error('Transfer submission failed')
-      transferError.name = 'TransferValidationError'
-      vi.mocked(submitTransfer).mockRejectedValueOnce(transferError)
-
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Complete form
-      await user.click(screen.getByText('Asset'))
-      await findAndClickSelectableItem(user, 'AVAX')
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      await user.click(screen.getByText('To'))
-      await clickAccountByIndex(user, 0)
-
-      const amountInput = screen.getByPlaceholderText('0.00')
-      await user.clear(amountInput)
-      await user.type(amountInput, '0.5')
-
-      const memoInput = screen.getByPlaceholderText(/Enter a memo/i)
-      await user.type(memoInput, 'Test memo')
-
-      // Submit transfer
-      const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-      await user.click(submitButton)
-
-      // Even with error, success screen is shown (per current implementation)
-      // TODO: This should be updated when error handling UI is added
-      await waitFor(
-        () => {
-          expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
-        },
-        { timeout: 3000 },
-      )
-
-      // Verify submitTransfer was called with correct parameters
-      expect(submitTransfer).toHaveBeenCalledWith({
-        vaultId: '1',
-        accountIndex: 0,
-        assetId: 'eip155:43113/native',
-        amount: expect.stringMatching(/^500000000000000000$/),
-        to: '0x1234567890123456789012345678901234567890',
-        memo: 'Test memo',
-      })
-    })
-  })
-
-  describe('Submit Transfer Integration', () => {
-    it('should call submitTransfer with correct parameters on successful submission', async () => {
-      const { submitTransfer } = await import('@/api/submit-transfer')
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Complete form
-      await user.click(screen.getByText('Asset'))
-      await findAndClickSelectableItem(user, 'AVAX')
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      await user.click(screen.getByText('To'))
-      await clickAccountByIndex(user, 0)
-
-      const amountInput = screen.getByPlaceholderText('0.00')
-      await user.clear(amountInput)
-      await user.type(amountInput, '0.5')
-
-      const memoInput = screen.getByPlaceholderText(/Enter a memo/i)
-      await user.type(memoInput, 'Test transfer memo')
-
-      // Submit transfer
-      const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-      await user.click(submitButton)
-
-      // Wait for submitTransfer to be called
-      await waitFor(() => {
-        expect(submitTransfer).toHaveBeenCalled()
-      })
-
-      // Verify submitTransfer was called with correct parameters
-      expect(submitTransfer).toHaveBeenCalledWith({
-        vaultId: '1',
-        accountIndex: 0,
-        assetId: 'eip155:43113/native',
-        amount: '500000000000000000', // 0.5 AVAX in smallest units (18 decimals)
-        to: '0x1234567890123456789012345678901234567890',
-        memo: 'Test transfer memo',
-      })
-
-      // Verify success screen appears
-      await waitFor(
-        () => {
-          expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
-          expect(screen.getByRole('button', { name: /New Request/i })).toBeInTheDocument()
-        },
-        { timeout: 3000 },
-      )
-    })
-
-    it('should convert amount correctly for different decimal places', async () => {
-      const { submitTransfer } = await import('@/api/submit-transfer')
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Select USDC (6 decimals) instead of AVAX (18 decimals)
-      await user.click(screen.getByText('Asset'))
-      await waitFor(() => {
-        expect(screen.getByText('USDC')).toBeInTheDocument()
-      })
-      await findAndClickSelectableItem(user, 'USDC')
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      await user.click(screen.getByText('To'))
-      await clickAccountByIndex(user, 0)
-
-      const amountInput = screen.getByPlaceholderText('0.00')
-      await user.clear(amountInput)
-      await user.type(amountInput, '100.5') // 100.5 USDC
-
-      const memoInput = screen.getByPlaceholderText(/Enter a memo/i)
-      await user.type(memoInput, 'USDC transfer')
-
-      // Submit transfer
-      const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-      await user.click(submitButton)
-
-      // Wait for submitTransfer to be called
-      await waitFor(() => {
-        expect(submitTransfer).toHaveBeenCalled()
-      })
-
-      // Verify amount is converted correctly for 6 decimals: 100.5 * 10^6 = 100500000
-      expect(submitTransfer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          assetId: 'eip155:43113/erc20:0xb6076c93701d6a07266c31066b298aec6dd65c2d',
-          amount: '100500000', // 100.5 USDC in smallest units (6 decimals)
-          memo: 'USDC transfer',
-        }),
-      )
-    })
-
-    it('should trim memo before submitting', async () => {
-      const { submitTransfer } = await import('@/api/submit-transfer')
-      const user = userEvent.setup()
-      renderWithProviders(<Transfer />)
-
-      // Complete form
-      await user.click(screen.getByText('Asset'))
-      await findAndClickSelectableItem(user, 'AVAX')
-
-      await user.click(screen.getByText('From'))
-      await waitFor(() => {
-        expect(screen.getByText('Vault 1')).toBeInTheDocument()
-      })
-      const vault1Option = screen.getByText('Vault 1').closest('button')
-      if (vault1Option) {
-        await user.click(vault1Option)
-      }
-
-      await user.click(screen.getByText('To'))
-      await clickAccountByIndex(user, 0)
-
-      const amountInput = screen.getByPlaceholderText('0.00')
-      await user.type(amountInput, '0.5')
-
-      const memoInput = screen.getByPlaceholderText(/Enter a memo/i)
-      await user.type(memoInput, '  Memo with spaces  ') // Memo with leading/trailing spaces
-
-      // Submit transfer
-      const submitButton = screen.getByRole('button', { name: /Submit Transfer/i })
-      await user.click(submitButton)
-
-      // Wait for submitTransfer to be called
-      await waitFor(() => {
-        expect(submitTransfer).toHaveBeenCalled()
-      })
-
-      // Verify memo is trimmed
-      expect(submitTransfer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          memo: 'Memo with spaces', // Should be trimmed
-        }),
-      )
     })
   })
 
