@@ -1,6 +1,39 @@
 # Ava Labs - Institutional Custody UI Take-Home Assignment
 
-A transaction request interface for institutional custody, demonstrating production-ready code with modern React patterns and best practices.
+## 📦 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- pnpm 9.15.3+
+
+### Installation
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+
+# Run unit tests
+pnpm test
+
+# Run E2E tests
+pnpm test:e2e
+
+# Lint code
+pnpm lint
+
+# Format code
+pnpm format
+```
 
 ## Tech Stack
 
@@ -99,39 +132,3 @@ The deployment workflow (`.github/workflows/deploy.yml`) handles:
 - Building the production bundle
 - TypeScript type checking
 - Deploying to GitHub Pages
-
-
-## 📦 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- pnpm 9.15.3+
-
-### Installation
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
-
-# Run unit tests
-pnpm test
-
-# Run E2E tests
-pnpm test:e2e
-
-# Lint code
-pnpm lint
-
-# Format code
-pnpm format
-```

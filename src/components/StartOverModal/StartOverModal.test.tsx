@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { StartOverModal } from './StartOverModal'
 
 describe('StartOverModal', () => {
@@ -50,7 +50,12 @@ describe('StartOverModal', () => {
       const onConfirm = vi.fn()
       const onOpenChange = vi.fn()
       render(
-        <StartOverModal {...defaultProps} open={true} onConfirm={onConfirm} onOpenChange={onOpenChange} />,
+        <StartOverModal
+          {...defaultProps}
+          open={true}
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />,
       )
 
       await user.click(screen.getByRole('button', { name: /Yes, start over/i }))
@@ -64,7 +69,12 @@ describe('StartOverModal', () => {
       const onConfirm = vi.fn()
       const onOpenChange = vi.fn()
       render(
-        <StartOverModal {...defaultProps} open={true} onConfirm={onConfirm} onOpenChange={onOpenChange} />,
+        <StartOverModal
+          {...defaultProps}
+          open={true}
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />,
       )
 
       await user.click(screen.getByRole('button', { name: /Go back/i }))
@@ -109,7 +119,12 @@ describe('StartOverModal', () => {
       const onConfirm = vi.fn()
       const onOpenChange = vi.fn()
       render(
-        <StartOverModal {...defaultProps} open={true} onConfirm={onConfirm} onOpenChange={onOpenChange} />,
+        <StartOverModal
+          {...defaultProps}
+          open={true}
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />,
       )
 
       await user.click(screen.getByRole('button', { name: /Yes, start over/i }))
@@ -123,7 +138,12 @@ describe('StartOverModal', () => {
       const onConfirm = vi.fn()
       const onOpenChange = vi.fn()
       render(
-        <StartOverModal {...defaultProps} open={true} onConfirm={onConfirm} onOpenChange={onOpenChange} />,
+        <StartOverModal
+          {...defaultProps}
+          open={true}
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />,
       )
 
       await user.click(screen.getByRole('button', { name: /Go back/i }))
