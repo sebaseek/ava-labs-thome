@@ -61,9 +61,11 @@ describe('useTransferFormValidation', () => {
           } as TransferFormInputValues,
         })
         return useTransferFormValidation({
-          form,
+          form: {
+            state: form.state,
+            store: form.store,
+          },
           hasAttemptedSubmit: false,
-          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -89,9 +91,11 @@ describe('useTransferFormValidation', () => {
           } as TransferFormInputValues,
         })
         return useTransferFormValidation({
-          form,
+          form: {
+            state: form.state,
+            store: form.store,
+          },
           hasAttemptedSubmit: true,
-          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -117,9 +121,11 @@ describe('useTransferFormValidation', () => {
           } as TransferFormInputValues,
         })
         return useTransferFormValidation({
-          form,
+          form: {
+            state: form.state,
+            store: form.store,
+          },
           hasAttemptedSubmit: true,
-          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -142,9 +148,11 @@ describe('useTransferFormValidation', () => {
           } as TransferFormInputValues,
         })
         return useTransferFormValidation({
-          form,
+          form: {
+            state: form.state,
+            store: form.store,
+          },
           hasAttemptedSubmit: true,
-          touchedFields: new Set(),
         })
       },
       { wrapper: createWrapper() },
@@ -152,31 +160,5 @@ describe('useTransferFormValidation', () => {
 
     expect(result.current.assetError).toBe(true)
     expect(result.current.fieldErrors.asset).toBeDefined()
-  })
-
-  it('provides validateForm function', () => {
-    const { result } = renderHook(
-      () => {
-        const form = useForm({
-          defaultValues: {
-            asset: mockAsset,
-            vault: mockVault,
-            toAddress: mockAddress,
-            amount: '100.00',
-            memo: 'Test memo',
-          } as TransferFormInputValues,
-        })
-        return useTransferFormValidation({
-          form,
-          hasAttemptedSubmit: false,
-          touchedFields: new Set(),
-        })
-      },
-      { wrapper: createWrapper() },
-    )
-
-    expect(typeof result.current.validateForm).toBe('function')
-    const validationResult = result.current.validateForm()
-    expect(validationResult.success).toBe(true)
   })
 })

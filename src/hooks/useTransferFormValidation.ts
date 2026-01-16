@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { TransferFormInputValues } from '@/schemas/transfer'
 import { type TransferFormValues, transferFormSchema } from '@/schemas/transfer'
 
@@ -7,9 +7,11 @@ interface UseTransferFormValidationOptions {
     state: {
       values: TransferFormInputValues
     }
+    store: {
+      subscribe: (callback: () => void) => () => void
+    }
   }
   hasAttemptedSubmit: boolean
-  touchedFields: Set<keyof TransferFormInputValues>
 }
 
 interface UseTransferFormValidationReturn {
@@ -24,22 +26,34 @@ interface UseTransferFormValidationReturn {
   toAddressErrorMessage: string | null
   amountErrorMessage: string | null
   memoErrorMessage: string | null
-  validateForm: () => ReturnType<typeof transferFormSchema.safeParse>
 }
 
 /**
  * Hook for managing transfer form validation
  * Reads directly from form state - single source of truth
+ * Uses Zod schema for validation
+ * Subscribes to form state changes to reactively update validation errors
  */
 export const useTransferFormValidation = ({
   form,
   hasAttemptedSubmit,
-  touchedFields: _touchedFields,
 }: UseTransferFormValidationOptions): UseTransferFormValidationReturn => {
-  // Validate form values using Zod schema - reads from form state
+  // Track form values reactively by subscribing to form store changes
+  // This ensures validation re-runs when form values change
+  const [formValues, setFormValues] = useState(form.state.values)
+
+  useEffect(() => {
+    // Subscribe to form store changes to update local state
+    const unsubscribe = form.store.subscribe(() => {
+      setFormValues({ ...form.state.values })
+    })
+    return unsubscribe
+  }, [form])
+
+  // Validate form values using Zod schema - reads from reactive form values
   const validateForm = useCallback(() => {
-    return transferFormSchema.safeParse(form.state.values)
-  }, [form.state.values])
+    return transferFormSchema.safeParse(formValues)
+  }, [formValues])
 
   // Only validate and show errors if user has attempted to submit
   const fieldErrors: Partial<Record<keyof TransferFormValues, string>> = useMemo(() => {
@@ -60,15 +74,10 @@ export const useTransferFormValidation = ({
     return errors
   }, [hasAttemptedSubmit, validateForm])
 
-  // Show error for a field only if:
-  // 1. Submit was attempted AND field has a validation error
-  // 2. Once a field is touched and fixed, the error clears automatically (hasError becomes false)
+  // Show error for a field only if submit was attempted AND field has a validation error
   const shouldShowError = (fieldName: keyof TransferFormInputValues): boolean => {
     if (!hasAttemptedSubmit) return false
-    const hasError = !!fieldErrors[fieldName]
-    // Only show error if field actually has a validation error
-    // The touched state is used to track user interaction, but errors are shown based on actual validation state
-    return hasError
+    return !!fieldErrors[fieldName]
   }
 
   const assetError = shouldShowError('asset')
@@ -96,6 +105,5 @@ export const useTransferFormValidation = ({
     toAddressErrorMessage,
     amountErrorMessage,
     memoErrorMessage,
-    validateForm,
   }
 }

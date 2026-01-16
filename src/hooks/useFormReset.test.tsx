@@ -26,7 +26,6 @@ describe('useFormReset', () => {
     const mockSetters = {
       setTransferCompleted: vi.fn(),
       setHasAttemptedSubmit: vi.fn(),
-      setTouchedFields: vi.fn(),
     }
 
     const { result } = renderHook(
@@ -53,7 +52,6 @@ describe('useFormReset', () => {
     const mockSetters = {
       setTransferCompleted: vi.fn(),
       setHasAttemptedSubmit: vi.fn(),
-      setTouchedFields: vi.fn(),
     }
 
     const { result } = renderHook(
@@ -84,6 +82,5 @@ describe('useFormReset', () => {
     // Form should be reset - check that form.reset() was called and setters were called
     expect(mockSetters.setTransferCompleted).toHaveBeenCalledWith(false)
     expect(mockSetters.setHasAttemptedSubmit).toHaveBeenCalledWith(false)
-    expect(mockSetters.setTouchedFields).toHaveBeenCalledWith(new Set())
   })
 })

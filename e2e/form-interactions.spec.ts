@@ -38,13 +38,21 @@ test.describe('Form Interactions', () => {
     await expect(assetOption).toBeVisible({ timeout: 5000 })
     await assetOption.click()
     
-    // Wait for vault field to become enabled (indicates asset was selected)
-    const vaultField = page.getByText(/select source/i).first()
-    await expect(vaultField).toBeEnabled({ timeout: 5000 })
+    // Wait for the asset drawer to close and asset to be selected
+    // Check that the asset name appears in the asset field (confirms selection)
+    await expect(page.locator('button').filter({ hasText: /asset/i }).filter({ hasText: /AVAX|USDC|ETH|BTC/i }).first()).toBeVisible({ timeout: 5000 })
+    
+    // Wait for vault field to become enabled (indicates asset was selected and form state updated)
+    // Find the button by looking for the button that contains the "From" label and "Select source" placeholder
+    const vaultFieldButton = page.locator('button').filter({ hasText: /from/i }).filter({ hasText: /select source/i }).first()
+    
+    // Wait for the button to not have the disabled attribute and not have cursor-not-allowed class
+    await expect(vaultFieldButton).not.toHaveAttribute('disabled', '', { timeout: 10000 })
+    await expect(vaultFieldButton).not.toHaveClass(/cursor-not-allowed/, { timeout: 1000 })
     
     // Now select a vault (required to enable amount input)
-    await expect(vaultField).toBeVisible()
-    await vaultField.click()
+    await expect(vaultFieldButton).toBeVisible()
+    await vaultFieldButton.click()
     
     // Wait for vault dropdown to open and vaults to load
     const vaultOption = page.locator('button[data-slot="selectable-item"]').first()
@@ -74,13 +82,21 @@ test.describe('Form Interactions', () => {
     await expect(assetOption).toBeVisible({ timeout: 5000 })
     await assetOption.click()
     
-    // Wait for vault field to become enabled (indicates asset was selected)
-    const vaultField = page.getByText(/select source/i).first()
-    await expect(vaultField).toBeEnabled({ timeout: 5000 })
+    // Wait for the asset drawer to close and asset to be selected
+    // Check that the asset name appears in the asset field (confirms selection)
+    await expect(page.locator('button').filter({ hasText: /asset/i }).filter({ hasText: /AVAX|USDC|ETH|BTC/i }).first()).toBeVisible({ timeout: 5000 })
+    
+    // Wait for vault field to become enabled (indicates asset was selected and form state updated)
+    // Find the button by looking for the button that contains the "From" label and "Select source" placeholder
+    const vaultFieldButton = page.locator('button').filter({ hasText: /from/i }).filter({ hasText: /select source/i }).first()
+    
+    // Wait for the button to not have the disabled attribute and not have cursor-not-allowed class
+    await expect(vaultFieldButton).not.toHaveAttribute('disabled', '', { timeout: 10000 })
+    await expect(vaultFieldButton).not.toHaveClass(/cursor-not-allowed/, { timeout: 1000 })
     
     // Select a vault (required for Max button to appear)
-    await expect(vaultField).toBeVisible()
-    await vaultField.click()
+    await expect(vaultFieldButton).toBeVisible()
+    await vaultFieldButton.click()
     
     // Wait for vault dropdown to open and vaults to load
     const vaultOption = page.locator('button[data-slot="selectable-item"]').first()
