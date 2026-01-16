@@ -69,4 +69,29 @@ test.describe('Navigation and Controls', () => {
       await expect(memoInput).toHaveValue('')
     }
   })
+
+  test('should close modal without resetting when Go back is clicked', async ({ page }) => {
+    // Fill memo field
+    const memoInput = page.getByPlaceholder(/enter a memo/i)
+    await memoInput.fill('Test memo')
+    await expect(memoInput).toHaveValue('Test memo')
+    
+    // Click Start Over to open confirmation modal
+    await page.getByRole('button', { name: /start over/i }).click()
+    
+    // Modal should be visible
+    await expect(page.getByText(/Start over\?/)).toBeVisible()
+    
+    // Click "Go back" button
+    await page.getByRole('button', { name: /Go back/i }).click()
+    
+    // Modal should be closed
+    await expect(page.getByText(/Start over\?/)).not.toBeVisible()
+    
+    // Memo should still have the value (not reset)
+    await expect(memoInput).toHaveValue('Test memo')
+    
+    // Form should still be visible
+    await expect(page.getByRole('heading', { name: /transfer/i })).toBeVisible()
+  })
 })
