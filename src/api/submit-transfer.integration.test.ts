@@ -146,20 +146,46 @@ describe('submitTransfer Integration Tests', () => {
   describe('Balance Validation Integration', () => {
     it('should validate balance against actual vault balances', async () => {
       const vaultBalances = assetToVaultBalances['eip155:43113/native']
-      const accountBalance = vaultBalances['1'][0].balance
+      const accountBalance = BigInt(vaultBalances['1'][0].balance)
+      // Fee for eip155:43113/native is 10000000000000000 (0.01 AVAX)
+      const fee = BigInt('10000000000000000')
+      // Use balance minus fee to ensure it passes validation
+      const amount = (accountBalance - fee).toString()
 
       const request = {
         vaultId: '1',
         accountIndex: 0,
         assetId: 'eip155:43113/native',
-        amount: accountBalance, // Use exact balance
+        amount: amount,
         to: networkToVaultToAddresses['eip155:43113']['1'][0].address,
         memo: 'Test memo',
       }
 
-      // Should succeed (though might warn about full balance transfer)
+      // Should succeed since amount + fee <= balance
       const result = await submitTransfer(request)
       expect(result).toHaveProperty('transactionId')
+    })
+
+    it('should reject transfer when amount + fee exceeds balance', async () => {
+      const vaultBalances = assetToVaultBalances['eip155:43113/native']
+      const accountBalance = BigInt(vaultBalances['1'][0].balance)
+      // Use exact balance, which will fail because amount + fee > balance
+      // (Fee for eip155:43113/native is 10000000000000000, so amount + fee > balance)
+      const amount = accountBalance.toString()
+
+      const request = {
+        vaultId: '1',
+        accountIndex: 0,
+        assetId: 'eip155:43113/native',
+        amount: amount,
+        to: networkToVaultToAddresses['eip155:43113']['1'][0].address,
+        memo: 'Test memo',
+      }
+
+      // Should fail because amount + fee > balance
+      await expect(submitTransfer(request)).rejects.toThrow(
+        'Insufficient balance. The transfer amount plus fees exceeds your available balance.',
+      )
     })
 
     it('should validate account index exists in vault', async () => {
@@ -178,14 +204,6 @@ describe('submitTransfer Integration Tests', () => {
 
   describe('Address Validation Integration', () => {
     it('should accept valid vault address', async () => {
-      // Ensure simulateApiRequest succeeds for this test
-      vi.mocked(utilsModule.simulateApiRequest).mockResolvedValueOnce({
-        transactionId: 'test-tx-id',
-        status: 'pending' as const,
-        timestamp: Date.now(),
-        estimatedConfirmationTime: 60,
-      })
-
       const validAddress = networkToVaultToAddresses['eip155:43113']['1'][0]
 
       const request = {
@@ -196,6 +214,18 @@ describe('submitTransfer Integration Tests', () => {
         to: validAddress.address,
         memo: 'Test memo',
       }
+
+      // Mock simulateApiRequest to return the correct value based on the call
+      // For fetchFee calls, it should return the fee string
+      // For submitTransfer calls, it should return the response object
+      vi.mocked(utilsModule.simulateApiRequest).mockImplementation(async (data, options) => {
+        const { minDelay = 10, maxDelay = 50 } = options || {}
+        const delay = Math.random() * (maxDelay - minDelay) + minDelay
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        // If data is a string (fee), return it as-is
+        // If data is an object (transfer response), return it as-is
+        return data
+      })
 
       const result = await submitTransfer(request)
       expect(result).toHaveProperty('transactionId')

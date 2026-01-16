@@ -163,7 +163,15 @@ export const Transfer = () => {
 
       // Check if it's a TransferValidationError with a field
       if (error instanceof Error && error.name === 'TransferValidationError') {
-        const validationError = error as { field?: string; message: string }
+        const validationError = error as { field?: string; message: string; code?: string }
+
+        // Don't show submission error for INSUFFICIENT_BALANCE on amount field
+        // since the amount field already displays this error
+        if (validationError.code === 'INSUFFICIENT_BALANCE' && validationError.field === 'amount') {
+          // Amount field already shows the error, don't show duplicate message
+          return
+        }
+
         setSubmissionError({
           field: validationError.field,
           message: validationError.message,

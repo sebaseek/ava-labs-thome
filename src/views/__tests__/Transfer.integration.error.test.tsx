@@ -236,11 +236,11 @@ describe('Transfer Integration Tests - Error Handling', () => {
       memo: 'Test memo',
     })
 
-    // Even with error, success screen is shown (per current implementation)
-    // TODO: This should be updated when error handling UI is added
+    // With error, success screen should NOT be shown - form should remain visible
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /View Transaction/i })).toBeInTheDocument()
+        expect(screen.getByText('Transfer')).toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /View Transaction/i })).not.toBeInTheDocument()
       },
       { timeout: 3000 },
     )
