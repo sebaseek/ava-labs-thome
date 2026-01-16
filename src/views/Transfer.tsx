@@ -1,17 +1,17 @@
 import { useForm } from '@tanstack/react-form'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { parseUnits } from 'viem'
 import { submitTransfer } from '@/api/submit-transfer'
 import {
-  AmountSelector,
-  AssetSelector,
-  Memo,
+  FormAmountSelector,
+  FormAssetSelector,
+  FormMemo,
+  FormToVaultSelector,
+  FormVaultSelector,
   NavigationControl,
   Stepper,
-  ToVaultSelector,
   TransferSuccess,
   Typography,
-  VaultSelector,
 } from '@/components'
 import { TransferFormSkeleton } from '@/components/TransferFormSkeleton'
 import { useFormReset } from '@/hooks/useFormReset'
@@ -170,6 +170,11 @@ export const Transfer = () => {
     resetForm()
   }
 
+  // Callback to clear submission errors for specific fields
+  const clearSubmissionError = useCallback((_field: string) => {
+    setSubmissionError(null)
+  }, [])
+
   const handleSubmitTransfer = async () => {
     // Mark that submit was attempted so validation errors are shown
     setHasAttemptedSubmit(true)
@@ -232,136 +237,54 @@ export const Transfer = () => {
               ) : (
                 <div className="w-full space-y-4">
                   {/* Asset Selector */}
-                  <form.Field name="asset">
-                    {(field) => (
-                      <AssetSelector
-                        selectedAsset={field.state.value}
-                        setSelectedAsset={(asset) => {
-                          field.handleChange(asset)
-                          if (submissionError?.field === 'assetId') {
-                            setSubmissionError(null)
-                          }
-                        }}
-                        onFieldClick={() => handleStepClick(0)}
-                        hasError={assetError || submissionError?.field === 'assetId'}
-                        validationError={
-                          submissionError?.field === 'assetId'
-                            ? submissionError.message
-                            : assetErrorMessage
-                        }
-                      />
-                    )}
-                  </form.Field>
+                  <FormAssetSelector
+                    form={form}
+                    onFieldClick={() => handleStepClick(0)}
+                    hasError={assetError}
+                    validationError={assetErrorMessage}
+                    submissionError={submissionError}
+                    clearSubmissionError={clearSubmissionError}
+                  />
+
                   {/* Vault Selector */}
-                  <form.Field name="vault">
-                    {(field) => (
-                      <form.Field name="asset">
-                        {(assetField) => (
-                          <VaultSelector
-                            selectedVault={field.state.value}
-                            setSelectedVault={(vault) => {
-                              field.handleChange(vault)
-                              if (submissionError?.field === 'vaultId') {
-                                setSubmissionError(null)
-                              }
-                            }}
-                            selectedAsset={assetField.state.value}
-                            onFieldClick={() => handleStepClick(1)}
-                            hasError={vaultError || submissionError?.field === 'vaultId'}
-                            validationError={
-                              submissionError?.field === 'vaultId'
-                                ? submissionError.message
-                                : vaultErrorMessage
-                            }
-                          />
-                        )}
-                      </form.Field>
-                    )}
-                  </form.Field>
+                  <FormVaultSelector
+                    form={form}
+                    onFieldClick={() => handleStepClick(1)}
+                    hasError={vaultError}
+                    validationError={vaultErrorMessage}
+                    submissionError={submissionError}
+                    clearSubmissionError={clearSubmissionError}
+                  />
+
                   {/* To Vault Selector */}
-                  <form.Field name="toAddress">
-                    {(field) => (
-                      <form.Field name="asset">
-                        {(assetField) => (
-                          <form.Field name="vault">
-                            {(vaultField) => (
-                              <ToVaultSelector
-                                selectedAsset={assetField.state.value}
-                                selectedAddress={field.state.value}
-                                setSelectedAddress={(address) => {
-                                  field.handleChange(address)
-                                  if (submissionError?.field === 'to') {
-                                    setSubmissionError(null)
-                                  }
-                                }}
-                                selectedVault={vaultField.state.value}
-                                onFieldClick={() => handleStepClick(2)}
-                                hasError={toAddressError || submissionError?.field === 'to'}
-                                validationError={
-                                  submissionError?.field === 'to'
-                                    ? submissionError.message
-                                    : toAddressErrorMessage
-                                }
-                              />
-                            )}
-                          </form.Field>
-                        )}
-                      </form.Field>
-                    )}
-                  </form.Field>
+                  <FormToVaultSelector
+                    form={form}
+                    onFieldClick={() => handleStepClick(2)}
+                    hasError={toAddressError}
+                    validationError={toAddressErrorMessage}
+                    submissionError={submissionError}
+                    clearSubmissionError={clearSubmissionError}
+                  />
+
                   {/* Amount Selector */}
-                  <form.Field name="amount">
-                    {(field) => (
-                      <form.Field name="asset">
-                        {(assetField) => (
-                          <form.Field name="vault">
-                            {(vaultField) => (
-                              <AmountSelector
-                                selectedAsset={assetField.state.value}
-                                selectedVault={vaultField.state.value}
-                                amount={field.state.value}
-                                setAmount={(value) => {
-                                  field.handleChange(value)
-                                  // Clear submission error when user edits amount
-                                  if (submissionError?.field === 'amount') {
-                                    setSubmissionError(null)
-                                  }
-                                }}
-                                onFieldClick={() => handleStepClick(3)}
-                                hasError={amountError || submissionError?.field === 'amount'}
-                                validationError={
-                                  submissionError?.field === 'amount'
-                                    ? submissionError.message
-                                    : amountErrorMessage
-                                }
-                              />
-                            )}
-                          </form.Field>
-                        )}
-                      </form.Field>
-                    )}
-                  </form.Field>
+                  <FormAmountSelector
+                    form={form}
+                    onFieldClick={() => handleStepClick(3)}
+                    hasError={amountError}
+                    validationError={amountErrorMessage}
+                    submissionError={submissionError}
+                    clearSubmissionError={clearSubmissionError}
+                  />
+
                   {/* Memo */}
-                  <form.Field name="memo">
-                    {(field) => (
-                      <Memo
-                        value={field.state.value}
-                        onChange={(value) => {
-                          field.handleChange(value)
-                          if (submissionError?.field === 'memo') {
-                            setSubmissionError(null)
-                          }
-                        }}
-                        onFieldClick={() => handleStepClick(4)}
-                        hasError={memoError || submissionError?.field === 'memo'}
-                        validationError={
-                          submissionError?.field === 'memo'
-                            ? submissionError.message
-                            : memoErrorMessage
-                        }
-                      />
-                    )}
-                  </form.Field>
+                  <FormMemo
+                    form={form}
+                    onFieldClick={() => handleStepClick(4)}
+                    hasError={memoError}
+                    validationError={memoErrorMessage}
+                    submissionError={submissionError}
+                    clearSubmissionError={clearSubmissionError}
+                  />
                   {/* General Error Message (for non-field-specific errors) */}
                   {submissionError && !submissionError.field && (
                     <div className="rounded-lg border border-red-highlight-1 bg-red-highlight-1-transparency-10 p-4">
