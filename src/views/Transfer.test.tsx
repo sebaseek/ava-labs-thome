@@ -21,23 +21,6 @@ vi.mock('@/hooks/useFormReset', () => ({
   })),
 }))
 
-vi.mock('@/hooks/useTransferFormValidation', () => ({
-  useTransferFormValidation: vi.fn(() => ({
-    assetError: false,
-    vaultError: false,
-    toAddressError: false,
-    amountError: false,
-    memoError: false,
-    assetErrorMessage: null,
-    vaultErrorMessage: null,
-    toAddressErrorMessage: null,
-    amountErrorMessage: null,
-    memoErrorMessage: null,
-    fieldErrors: {},
-    validateForm: vi.fn(() => ({ success: false })),
-  })),
-}))
-
 vi.mock('@/api/submit-transfer', () => ({
   submitTransfer: vi.fn(() =>
     Promise.resolve({

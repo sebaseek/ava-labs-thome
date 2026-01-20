@@ -234,7 +234,7 @@ describe('Transfer Integration Tests - Amount Calculations', () => {
     const maxButton = screen.getByRole('button', { name: /Max/i })
     await user.click(maxButton)
 
-    // Amount should be set to max (balance is 1 AVAX, fee is 0.1, so max is 0.9)
+    // Amount should be set to max (balance - fee = 0.9 AVAX for native tokens)
     await waitFor(() => {
       const amountInput = screen.getByPlaceholderText('0.00')
       expect(amountInput).toHaveValue('0.9')

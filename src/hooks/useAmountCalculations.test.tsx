@@ -7,12 +7,12 @@ import type { Vault } from '@/api/vaults'
 import { useAmountCalculations } from './useAmountCalculations'
 
 const mockAsset: Asset = {
-  id: 'asset-1',
+  id: 'eip155:43113/native', // Native token ID format
   symbol: 'AVAX',
   name: 'Avax',
   decimals: 18,
   logoUri: '/avax.png',
-  networkId: 'network-1',
+  networkId: 'eip155:43113', // Avalanche C-Chain
   coinGeckoId: 'avalanche-2',
 }
 
@@ -105,11 +105,11 @@ describe('useAmountCalculations', () => {
     expect(typeof result.current.availableBalance.usdValue).toBe('number')
   })
 
-  it('calculates max amount correctly (balance minus fee)', async () => {
+  it('calculates max amount correctly (balance - fee for native tokens)', async () => {
     const { result } = renderHook(
       () =>
         useAmountCalculations({
-          selectedAsset: mockAsset,
+          selectedAsset: mockAsset, // AVAX is native token
           selectedVault: mockVault,
           currentAmount: '0.00',
         }),
@@ -120,7 +120,7 @@ describe('useAmountCalculations', () => {
       expect(result.current.maxAmount.bigInt).toBeGreaterThan(BigInt(0))
     })
 
-    // Max should be balance (1 AVAX) minus fee (0.1 AVAX) = 0.9 AVAX
+    // Max should be balance (1 AVAX) minus fee (0.1 AVAX) = 0.9 AVAX for native tokens
     expect(result.current.maxAmount.formatted).toBe('0.9')
   })
 
@@ -146,9 +146,9 @@ describe('useAmountCalculations', () => {
     const { result } = renderHook(
       () =>
         useAmountCalculations({
-          selectedAsset: mockAsset,
+          selectedAsset: mockAsset, // AVAX is native token
           selectedVault: mockVault,
-          currentAmount: '0.9', // Max amount
+          currentAmount: '0.9', // Max amount (balance - fee for native tokens)
           setAmount: vi.fn(),
         }),
       { wrapper: createWrapper() },

@@ -1,16 +1,15 @@
 import { Info } from 'lucide-react'
-import type { Asset } from '@/api/assets'
 
 export interface FeeDisplayProps {
   formattedFee: string | null
-  selectedAsset: Asset | null
+  feeTokenSymbol: string | null // Native token symbol (AVAX, ETH, BTC)
   feeError: boolean | Error | null
 }
 
 /**
- * FeeDisplay component - shows fee information
+ * FeeDisplay component - shows fee information in native network token
  */
-export const FeeDisplay = ({ formattedFee, selectedAsset, feeError }: FeeDisplayProps) => {
+export const FeeDisplay = ({ formattedFee, feeTokenSymbol, feeError }: FeeDisplayProps) => {
   return (
     <div className="flex items-center">
       <div className="flex items-center gap-[80px]">
@@ -19,11 +18,11 @@ export const FeeDisplay = ({ formattedFee, selectedAsset, feeError }: FeeDisplay
           <Info className="h-2.5 w-2.5 text-blue-5" />
         </div>
 
-        {selectedAsset && formattedFee !== null && !feeError ? (
+        {feeTokenSymbol && formattedFee !== null && !feeError ? (
           <span className="text-base font-medium leading-[120%] text-blue-5">
-            {formattedFee} {selectedAsset.symbol}
+            {formattedFee} {feeTokenSymbol}
           </span>
-        ) : selectedAsset && feeError ? (
+        ) : feeTokenSymbol && feeError ? (
           <span className="text-base font-medium leading-[120%] text-red-highlight-2">
             Unable to load fee
           </span>

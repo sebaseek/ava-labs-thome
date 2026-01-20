@@ -25,7 +25,6 @@ describe('useFormReset', () => {
   it('provides resetForm function', () => {
     const mockSetters = {
       setTransferCompleted: vi.fn(),
-      setHasAttemptedSubmit: vi.fn(),
     }
 
     const { result } = renderHook(
@@ -51,7 +50,7 @@ describe('useFormReset', () => {
   it('resets form values when resetForm is called', () => {
     const mockSetters = {
       setTransferCompleted: vi.fn(),
-      setHasAttemptedSubmit: vi.fn(),
+      setSubmissionError: vi.fn(),
     }
 
     const { result } = renderHook(
@@ -79,8 +78,8 @@ describe('useFormReset', () => {
       result.current.resetForm()
     })
 
-    // Form should be reset - check that form.reset() was called and setters were called
+    // Form should be reset - check that setters were called
     expect(mockSetters.setTransferCompleted).toHaveBeenCalledWith(false)
-    expect(mockSetters.setHasAttemptedSubmit).toHaveBeenCalledWith(false)
+    expect(mockSetters.setSubmissionError).toHaveBeenCalled()
   })
 })

@@ -17,8 +17,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
     expect(result.current.amount).toBe('0.00')
@@ -28,8 +29,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
         amount: '100.50',
         setAmount: () => {},
       }),
@@ -41,8 +43,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -57,8 +60,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -73,8 +77,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -89,8 +94,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -105,8 +111,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -121,8 +128,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
       }),
     )
 
@@ -135,36 +143,38 @@ describe('useAmountInput', () => {
     expect(result.current.hasValue).toBe(true)
   })
 
-  it('calculates insufficient balance when amount exceeds available balance', () => {
+  it('calculates insufficient balance when amount exceeds available balance (non-native)', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: '100000000000000000', // 0.1 AVAX
         availableBalance: BigInt(1000000000000000000), // 1 AVAX
+        fee: '100000000000000000', // 0.1 AVAX (ignored for non-native)
+        isNativeToken: false,
       }),
     )
 
     act(() => {
-      result.current.handleAmountChange('1.5') // 1.5 AVAX + 0.1 fee = 1.6 AVAX needed, but only 1 AVAX available
+      result.current.handleAmountChange('1.5') // 1.5 needed, but only 1 available
     })
 
     expect(result.current.insufficientBalance).not.toBeNull()
   })
 
-  it('returns null for insufficient balance when amount is valid', () => {
+  it('includes fee in validation for native tokens', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
+        availableBalance: BigInt(1000000000000000000), // 1 AVAX
         fee: '100000000000000000', // 0.1 AVAX
-        availableBalance: BigInt(2000000000000000000), // 2 AVAX
+        isNativeToken: true,
       }),
     )
 
     act(() => {
-      result.current.handleAmountChange('1.5') // 1.5 AVAX + 0.1 fee = 1.6 AVAX needed, 2 AVAX available
+      result.current.handleAmountChange('0.95') // 0.95 + 0.1 fee = 1.05 needed, but only 1 available
     })
 
-    expect(result.current.insufficientBalance).toBeNull()
+    expect(result.current.insufficientBalance).not.toBeNull()
   })
 
   it('calls external setAmount when provided', () => {
@@ -172,8 +182,9 @@ describe('useAmountInput', () => {
     const { result } = renderHook(() =>
       useAmountInput({
         selectedAsset: mockAsset,
-        fee: null,
         availableBalance: BigInt(1000000000000000000),
+        fee: null,
+        isNativeToken: false,
         setAmount,
       }),
     )

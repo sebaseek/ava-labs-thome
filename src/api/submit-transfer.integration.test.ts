@@ -147,10 +147,8 @@ describe('submitTransfer Integration Tests', () => {
     it('should validate balance against actual vault balances', async () => {
       const vaultBalances = assetToVaultBalances['eip155:43113/native']
       const accountBalance = BigInt(vaultBalances['1'][0].balance)
-      // Fee for eip155:43113/native is 10000000000000000 (0.01 AVAX)
-      const fee = BigInt('10000000000000000')
-      // Use balance minus fee to ensure it passes validation
-      const amount = (accountBalance - fee).toString()
+      // Use a portion of the balance to ensure it passes validation
+      const amount = (accountBalance / BigInt(2)).toString()
 
       const request = {
         vaultId: '1',
@@ -161,31 +159,9 @@ describe('submitTransfer Integration Tests', () => {
         memo: 'Test memo',
       }
 
-      // Should succeed since amount + fee <= balance
+      // Should succeed since amount <= balance
       const result = await submitTransfer(request)
       expect(result).toHaveProperty('transactionId')
-    })
-
-    it('should reject transfer when amount + fee exceeds balance', async () => {
-      const vaultBalances = assetToVaultBalances['eip155:43113/native']
-      const accountBalance = BigInt(vaultBalances['1'][0].balance)
-      // Use exact balance, which will fail because amount + fee > balance
-      // (Fee for eip155:43113/native is 10000000000000000, so amount + fee > balance)
-      const amount = accountBalance.toString()
-
-      const request = {
-        vaultId: '1',
-        accountIndex: 0,
-        assetId: 'eip155:43113/native',
-        amount: amount,
-        to: networkToVaultToAddresses['eip155:43113']['1'][0].address,
-        memo: 'Test memo',
-      }
-
-      // Should fail because amount + fee > balance
-      await expect(submitTransfer(request)).rejects.toThrow(
-        'Insufficient balance. The transfer amount plus fees exceeds your available balance.',
-      )
     })
 
     it('should validate account index exists in vault', async () => {

@@ -21,6 +21,8 @@ vi.mock('@/hooks/useAmountCalculations', () => ({
   useAmountCalculations: vi.fn(() => ({
     fee: '100000000000000000',
     feeError: null,
+    feeTokenSymbol: 'AVAX',
+    isNativeToken: true, // AVAX is native token
     balanceError: null,
     availableBalance: {
       balance: BigInt('1000000000000000000'),
@@ -29,7 +31,7 @@ vi.mock('@/hooks/useAmountCalculations', () => ({
     },
     formattedFee: '0.1',
     maxAmount: {
-      bigInt: BigInt('900000000000000000'),
+      bigInt: BigInt('900000000000000000'), // balance - fee for native tokens
       formatted: '0.9',
     },
     isMaxAmount: false,

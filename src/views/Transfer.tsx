@@ -16,13 +16,11 @@ import {
 import { TransferFormSkeleton } from '@/components/TransferFormSkeleton'
 import { useFormReset } from '@/hooks/useFormReset'
 import { useStepNavigation } from '@/hooks/useStepNavigation'
-import { useTransferFormValidation } from '@/hooks/useTransferFormValidation'
 import type { TransferFormInputValues } from '@/schemas/transfer'
 import { transferFormSchema } from '@/schemas/transfer'
 
 export const Transfer = () => {
   const [transferCompleted, setTransferCompleted] = useState(false)
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   // Track submission errors from API (e.g., insufficient balance)
   const [submissionError, setSubmissionError] = useState<{
@@ -100,6 +98,7 @@ export const Transfer = () => {
   }
 
   // Form manages all form state including selections
+  // Uses Standard Schema (Zod) for validation - errors appear in field.state.meta.errors
   const form = useForm({
     defaultValues: {
       asset: null,
@@ -108,6 +107,10 @@ export const Transfer = () => {
       amount: '0.00',
       memo: '',
     } as TransferFormInputValues,
+    validators: {
+      // Standard Schema support - Zod schemas work directly without adapter
+      onSubmit: transferFormSchema,
+    },
     onSubmit: async ({ value }) => {
       await handleFormSubmit(value)
     },
@@ -141,29 +144,8 @@ export const Transfer = () => {
     form,
     setters: {
       setTransferCompleted,
-      setHasAttemptedSubmit,
       setSubmissionError: () => setSubmissionError(null),
     },
-  })
-
-  // Form validation logic - reads from form state directly
-  const {
-    assetError,
-    vaultError,
-    toAddressError,
-    amountError,
-    memoError,
-    assetErrorMessage,
-    vaultErrorMessage,
-    toAddressErrorMessage,
-    amountErrorMessage,
-    memoErrorMessage,
-  } = useTransferFormValidation({
-    form: {
-      state: form.state,
-      store: form.store,
-    },
-    hasAttemptedSubmit,
   })
 
   const handleStartOver = () => {
@@ -175,19 +157,12 @@ export const Transfer = () => {
     setSubmissionError(null)
   }, [])
 
+  // Submit handler - TanStack Form + Standard Schema handles validation automatically
   const handleSubmitTransfer = async () => {
-    // Mark that submit was attempted so validation errors are shown
-    setHasAttemptedSubmit(true)
-
-    // Validate form using Zod schema
-    const result = transferFormSchema.safeParse(form.state.values)
-    if (!result.success) {
-      // Validation failed - errors will be shown via validation hook
-      return
-    }
-
-    // Validation passed - call submission handler directly
-    await handleFormSubmit(form.state.values)
+    // form.handleSubmit() triggers validation via Standard Schema (Zod)
+    // If validation passes, onSubmit is called
+    // If validation fails, errors appear in field.state.meta.errors
+    await form.handleSubmit()
   }
 
   const handleNewRequest = () => {
@@ -240,8 +215,6 @@ export const Transfer = () => {
                   <FormAssetSelector
                     form={form}
                     onFieldClick={() => handleStepClick(0)}
-                    hasError={assetError}
-                    validationError={assetErrorMessage}
                     submissionError={submissionError}
                     clearSubmissionError={clearSubmissionError}
                   />
@@ -250,8 +223,6 @@ export const Transfer = () => {
                   <FormVaultSelector
                     form={form}
                     onFieldClick={() => handleStepClick(1)}
-                    hasError={vaultError}
-                    validationError={vaultErrorMessage}
                     submissionError={submissionError}
                     clearSubmissionError={clearSubmissionError}
                   />
@@ -260,8 +231,6 @@ export const Transfer = () => {
                   <FormToVaultSelector
                     form={form}
                     onFieldClick={() => handleStepClick(2)}
-                    hasError={toAddressError}
-                    validationError={toAddressErrorMessage}
                     submissionError={submissionError}
                     clearSubmissionError={clearSubmissionError}
                   />
@@ -270,8 +239,6 @@ export const Transfer = () => {
                   <FormAmountSelector
                     form={form}
                     onFieldClick={() => handleStepClick(3)}
-                    hasError={amountError}
-                    validationError={amountErrorMessage}
                     submissionError={submissionError}
                     clearSubmissionError={clearSubmissionError}
                   />
@@ -280,8 +247,6 @@ export const Transfer = () => {
                   <FormMemo
                     form={form}
                     onFieldClick={() => handleStepClick(4)}
-                    hasError={memoError}
-                    validationError={memoErrorMessage}
                     submissionError={submissionError}
                     clearSubmissionError={clearSubmissionError}
                   />

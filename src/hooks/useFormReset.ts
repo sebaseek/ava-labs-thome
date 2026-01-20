@@ -7,7 +7,6 @@ interface UseFormResetOptions {
   }
   setters: {
     setTransferCompleted: (completed: boolean) => void
-    setHasAttemptedSubmit: (attempted: boolean) => void
     setSubmissionError?: () => void
   }
 }
@@ -19,6 +18,7 @@ interface UseFormResetOptions {
 export const useFormReset = ({ form, setters }: UseFormResetOptions) => {
   const resetForm = useCallback(() => {
     // Reset all form fields including selections
+    // form.reset() resets to defaultValues and clears validation state
     form.reset()
     form.setFieldValue('asset', null)
     form.setFieldValue('vault', null)
@@ -28,7 +28,6 @@ export const useFormReset = ({ form, setters }: UseFormResetOptions) => {
 
     // Reset UI state
     setters.setTransferCompleted(false)
-    setters.setHasAttemptedSubmit(false)
     setters.setSubmissionError?.()
   }, [form, setters])
 

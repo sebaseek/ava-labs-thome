@@ -8,6 +8,17 @@ import type { Vault } from '@/api/vaults'
 import { calculateUSDValue } from '@/hooks/useUSDValue'
 import { formatBalance } from '@/utils/balance'
 
+// Native token info per network (for fee display)
+const NATIVE_TOKEN_INFO: Record<string, { symbol: string; decimals: number }> = {
+  'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG': { symbol: 'AVAX', decimals: 9 },
+  'eip155:43113': { symbol: 'AVAX', decimals: 18 },
+  'eip155:11155111': { symbol: 'ETH', decimals: 18 },
+  'bip122:000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943': {
+    symbol: 'BTC',
+    decimals: 8,
+  },
+}
+
 interface UseAmountCalculationsOptions {
   selectedAsset: Asset | null
   selectedVault: Vault | null
@@ -19,6 +30,8 @@ interface UseAmountCalculationsOptions {
 interface UseAmountCalculationsReturn {
   fee: string | null
   feeError: Error | null
+  feeTokenSymbol: string | null // Native token symbol for the fee (AVAX, ETH, BTC)
+  isNativeToken: boolean // Whether selected asset is the native token for its network
   vaultBalances: Array<{ balance: string; accountIndex: number }> | null
   balanceError: Error | null
   availableBalance: {
@@ -79,31 +92,56 @@ export const useAmountCalculations = ({
     return { balance, usdValue, formatted }
   }, [selectedAsset, selectedVault, vaultBalances, accountIndex])
 
+  // Get native token info for the selected asset's network
+  const nativeTokenInfo = useMemo(() => {
+    if (!selectedAsset) return null
+    return NATIVE_TOKEN_INFO[selectedAsset.networkId] || null
+  }, [selectedAsset])
+
+  // Check if the selected asset is the native token for its network
+  const isNativeToken = useMemo(() => {
+    if (!selectedAsset || !nativeTokenInfo) return false
+    // Native tokens have "/native" in their ID
+    return selectedAsset.id.includes('/native')
+  }, [selectedAsset, nativeTokenInfo])
+
+  // Format fee in native token units (AVAX, ETH, BTC)
   const formattedFee = useMemo(() => {
-    if (!fee || !selectedAsset) return ''
-    return formatBalance(BigInt(fee), selectedAsset.decimals)
-  }, [fee, selectedAsset])
+    if (!fee || !nativeTokenInfo) return ''
+    return formatBalance(BigInt(fee), nativeTokenInfo.decimals)
+  }, [fee, nativeTokenInfo])
+
+  // Fee token symbol for display
+  const feeTokenSymbol = useMemo(() => {
+    return nativeTokenInfo?.symbol || null
+  }, [nativeTokenInfo])
 
   // Calculate max amount
-  // If balance > fee: max = balance - fee (normal case, can send without error)
-  // If balance <= fee: max = balance (full balance, will show insufficient balance error for fees, which is expected)
+  // If native token: subtract fee (both transfer and fee come from same balance)
+  // If non-native token: full balance (fees paid separately in native token)
   const maxAmount = useMemo(() => {
     if (!selectedAsset) {
       return { bigInt: BigInt(0), formatted: '0' }
     }
 
-    const feeBigInt = fee ? BigInt(fee) : BigInt(0)
     const balance = availableBalance.balance || BigInt(0)
 
-    // If fees exceed or equal balance, set max to full balance (user will see error, which is expected)
-    // Otherwise, set max to balance - fee (normal case)
-    const max = balance > feeBigInt ? balance - feeBigInt : balance
-
-    return {
-      bigInt: max,
-      formatted: formatBalance(max, selectedAsset.decimals),
+    // Only subtract fee if selected asset is the native token
+    if (isNativeToken && fee) {
+      const feeBigInt = BigInt(fee)
+      const max = balance > feeBigInt ? balance - feeBigInt : balance
+      return {
+        bigInt: max,
+        formatted: formatBalance(max, selectedAsset.decimals),
+      }
     }
-  }, [selectedAsset, availableBalance.balance, fee])
+
+    // Non-native tokens: max is full balance
+    return {
+      bigInt: balance,
+      formatted: formatBalance(balance, selectedAsset.decimals),
+    }
+  }, [selectedAsset, availableBalance.balance, fee, isNativeToken])
 
   // Check if current amount equals max amount
   const isMaxAmount = useMemo(() => {
@@ -145,6 +183,8 @@ export const useAmountCalculations = ({
   return {
     fee: fee ?? null,
     feeError: feeError as Error | null,
+    feeTokenSymbol,
+    isNativeToken,
     vaultBalances: vaultBalances ?? null,
     balanceError: balanceError as Error | null,
     availableBalance,

@@ -33,20 +33,32 @@ export const AmountSelector = ({
 
   // Get all calculations (fee, balances, max amount, etc.)
   // Note: currentAmount is calculated internally, we pass the external amount
-  const { fee, feeError, balanceError, availableBalance, formattedFee, maxAmount, isMaxAmount } =
-    useAmountCalculations({
-      selectedAsset,
-      selectedVault,
-      currentAmount: amount || '0.00',
-      setAmount,
-    })
+  const {
+    fee,
+    feeError,
+    feeTokenSymbol,
+    isNativeToken,
+    balanceError,
+    availableBalance,
+    formattedFee,
+    maxAmount,
+    isMaxAmount,
+  } = useAmountCalculations({
+    selectedAsset,
+    selectedVault,
+    currentAmount: amount || '0.00',
+    setAmount,
+  })
 
-  // Get amount input state and handlers with actual fee and balance
+  // Get amount input state and handlers
+  // For native tokens: fee is included in validation (both come from same balance)
+  // For non-native tokens: fee is paid separately in native token
   const { displayAmount, hasValue, insufficientBalance, totalNeeded, handleAmountChange } =
     useAmountInput({
       selectedAsset,
-      fee: fee,
       availableBalance: availableBalance.balance,
+      fee,
+      isNativeToken,
       amount,
       setAmount,
     })
@@ -100,7 +112,7 @@ export const AmountSelector = ({
 
             <FeeDisplay
               formattedFee={isDisabled ? null : formattedFee}
-              selectedAsset={isDisabled ? null : selectedAsset}
+              feeTokenSymbol={isDisabled ? null : feeTokenSymbol}
               feeError={isDisabled ? null : feeError}
             />
           </div>

@@ -1,5 +1,4 @@
 import { networkToVaultToAddresses } from './addresses'
-import { fetchFee } from './fee'
 import { simulateApiRequest } from './utils'
 import { assetToVaultBalances } from './vault-balances'
 
@@ -34,7 +33,7 @@ class TransferValidationError extends Error {
 /**
  * Validates transfer request parameters
  */
-const validateTransferRequest = async (request: TransferRequest) => {
+const validateTransferRequest = (request: TransferRequest) => {
   const { vaultId, accountIndex, assetId, amount, to, memo } = request
 
   // Basic field validation
@@ -118,7 +117,7 @@ const validateTransferRequest = async (request: TransferRequest) => {
     )
   }
 
-  // Validate sufficient balance (including fees)
+  // Validate sufficient balance
   try {
     const vaultBalances = assetToVaultBalances[assetId]
 
@@ -145,32 +144,10 @@ const validateTransferRequest = async (request: TransferRequest) => {
     const balance = BigInt(accountBalance.balance)
     const transferAmount = BigInt(amount)
 
-    // Fetch fee for the asset
-    const fee: string = await fetchFee(assetId).catch((error) => {
-      throw new TransferValidationError(
-        'FEE_FETCH_FAILED',
-        `Failed to fetch fee for asset ${assetId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'amount',
-      )
-    })
-
-    const feeBigInt = BigInt(fee)
-    const totalNeeded = transferAmount + feeBigInt
-
-    // Check if transfer amount alone exceeds balance
     if (transferAmount > balance) {
       throw new TransferValidationError(
         'INSUFFICIENT_BALANCE',
-        'Insufficient balance. The transfer amount exceeds your available balance.',
-        'amount',
-      )
-    }
-
-    // Check if transfer amount + fee exceeds balance
-    if (totalNeeded > balance) {
-      throw new TransferValidationError(
-        'INSUFFICIENT_BALANCE',
-        'Insufficient balance. The transfer amount plus fees exceeds your available balance.',
+        `Insufficient balance. Available: ${balance.toString()}, Requested: ${amount}`,
         'amount',
       )
     }
@@ -220,7 +197,7 @@ const generateTransactionId = (): string => {
 export const submitTransfer = async (request: TransferRequest) => {
   try {
     // Validate the transfer request
-    await validateTransferRequest(request)
+    validateTransferRequest(request)
 
     // Simulate the transfer submission
     const response: TransferResponse = {

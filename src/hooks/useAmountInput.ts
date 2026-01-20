@@ -5,8 +5,9 @@ import { formatBalance, formatNumberWithCommas } from '@/utils/balance'
 
 interface UseAmountInputOptions {
   selectedAsset: Asset | null
-  fee: string | null
   availableBalance: bigint
+  fee: string | null
+  isNativeToken: boolean
   amount?: string
   setAmount?: (value: string) => void
 }
@@ -50,8 +51,9 @@ const cleanAmountInput = (value: string): string => {
  */
 export const useAmountInput = ({
   selectedAsset,
-  fee,
   availableBalance,
+  fee,
+  isNativeToken,
   amount: externalAmount,
   setAmount: externalSetAmount,
 }: UseAmountInputOptions): UseAmountInputReturn => {
@@ -82,15 +84,20 @@ export const useAmountInput = ({
     return formatted
   }, [amount])
 
+  // Check if amount exceeds balance
+  // For native tokens: include fee in total needed (both come from same balance)
+  // For non-native tokens: only check amount (fees paid separately in native token)
   const { insufficientBalance, totalNeeded } = useMemo(() => {
-    if (!selectedAsset || !fee || !hasValue || availableBalance === BigInt(0)) {
+    if (!selectedAsset || !hasValue || availableBalance === BigInt(0)) {
       return { insufficientBalance: null, totalNeeded: null }
     }
 
     try {
       const amountWithoutCommas = amount.replace(/,/g, '')
       const amountBigInt = parseUnits(amountWithoutCommas, selectedAsset.decimals)
-      const feeBigInt = BigInt(fee)
+
+      // For native tokens, add fee to total needed
+      const feeBigInt = isNativeToken && fee ? BigInt(fee) : BigInt(0)
       const totalNeededBigInt = amountBigInt + feeBigInt
 
       if (totalNeededBigInt > availableBalance) {
@@ -105,7 +112,7 @@ export const useAmountInput = ({
     }
 
     return { insufficientBalance: null, totalNeeded: null }
-  }, [amount, hasValue, selectedAsset, fee, availableBalance])
+  }, [amount, hasValue, selectedAsset, availableBalance, fee, isNativeToken])
 
   return {
     amount,
